@@ -14,7 +14,7 @@
 
 import abc
 from dataclasses import dataclass, field
-from typing import Sequence
+from typing import Sequence, Dict, List, Union, Optional
 
 import draccus
 
@@ -47,20 +47,20 @@ class RobotConfig(draccus.ChoiceRegistry, abc.ABC):
 # TODO(rcadene, aliberts): remove ManipulatorRobotConfig abstraction
 @dataclass
 class ManipulatorRobotConfig(RobotConfig):
-    leader_arms: dict[str, MotorsBusConfig] = field(default_factory=lambda: {})
-    follower_arms: dict[str, MotorsBusConfig] = field(default_factory=lambda: {})
-    cameras: dict[str, CameraConfig] = field(default_factory=lambda: {})
+    leader_arms: Dict[str, MotorsBusConfig] = field(default_factory=dict)
+    follower_arms: Dict[str, MotorsBusConfig] = field(default_factory=dict)
+    cameras: Dict[str, CameraConfig] = field(default_factory=dict)
 
     # Optionally limit the magnitude of the relative positional target vector for safety purposes.
     # Set this to a positive scalar to have the same value for all motors, or a list that is the same length
     # as the number of motors in your follower arms (assumes all follower arms have the same number of
     # motors).
-    max_relative_target: list[float] | float | None = None
+    max_relative_target: Optional[Union[List[float], float]] = None
 
     # Optionally set the leader arm in torque mode with the gripper motor set to this angle. This makes it
     # possible to squeeze the gripper and have it spring back to an open position on its own. If None, the
     # gripper is not put in torque mode.
-    gripper_open_degree: float | None = None
+    gripper_open_degree: Optional[float] = None
 
     mock: bool = False
 
@@ -86,32 +86,33 @@ class ManipulatorRobotConfig(RobotConfig):
                         "Note: This feature does not yet work with robots where different follower arms have "
                         "different numbers of motors."
                     )
+
 
 @dataclass
 class DDSManipulatorRobotConfig(RobotConfig):
-    leader_motors: dict[str, MotorsBusConfig] = field(default_factory=lambda: {})
-    follower_motors: dict[str, MotorsBusConfig] = field(default_factory=lambda: {})
-    cameras: dict[str, CameraConfig] = field(default_factory=lambda: {})
+    leader_motors: Dict[str, MotorsBusConfig] = field(default_factory=dict)
+    follower_motors: Dict[str, MotorsBusConfig] = field(default_factory=dict)
+    cameras: Dict[str, CameraConfig] = field(default_factory=dict)
 
     # Optionally limit the magnitude of the relative positional target vector for safety purposes.
     # Set this to a positive scalar to have the same value for all motors, or a list that is the same length
     # as the number of motors in your follower arms (assumes all follower arms have the same number of
     # motors).
-    max_relative_target: list[float] | float | None = None
+    max_relative_target: Optional[Union[List[float], float]] = None
 
     # Optionally set the leader arm in torque mode with the gripper motor set to this angle. This makes it
     # possible to squeeze the gripper and have it spring back to an open position on its own. If None, the
     # gripper is not put in torque mode.
-    gripper_open_degree: float | None = None
+    gripper_open_degree: Optional[float] = None
 
     mock: bool = False
 
     def __post_init__(self):
         if self.mock:
-            for arm in self.leader_arms.values():
+            for arm in self.leader_motors.values():
                 if not arm.mock:
                     arm.mock = True
-            for arm in self.follower_arms.values():
+            for arm in self.follower_motors.values():
                 if not arm.mock:
                     arm.mock = True
             for cam in self.cameras.values():
@@ -119,12 +120,13 @@ class DDSManipulatorRobotConfig(RobotConfig):
                     cam.mock = True
 
         if self.max_relative_target is not None and isinstance(self.max_relative_target, Sequence):
-            for name in self.follower_arms:
-                if len(self.follower_arms[name].motors) != len(self.max_relative_target):
+            for name in self.follower_motors:
+                if len(self.follower_motors[name].motors) != len(self.max_relative_target):
                     raise ValueError(
                         f"len(max_relative_target)={len(self.max_relative_target)} but the follower arm with name {name} has "
-                        f"{len(self.follower_arms[name].motors)} motors. Please make sure that the "
+                        f"{len(self.follower_motors[name].motors)} motors. Please make sure that the "
                         f"`max_relative_target` list has as many parameters as there are motors per arm. "
                         "Note: This feature does not yet work with robots where different follower arms have "
                         "different numbers of motors."
                     )
+    

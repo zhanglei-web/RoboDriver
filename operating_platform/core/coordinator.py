@@ -1,4 +1,3 @@
-
 import cv2
 import json
 import time
@@ -14,10 +13,11 @@ from dataclasses import dataclass, asdict
 from pathlib import Path
 from pprint import pformat
 from deepdiff import DeepDiff
-from functools import cache
+# from functools import cache
 from termcolor import colored
 from datetime import datetime
 import subprocess
+from typing import Dict, List
 
 # from operating_platform.policy.config import PreTrainedConfig
 from operating_platform.robot.robots.configs import RobotConfig
@@ -35,29 +35,31 @@ from operating_platform.dataset.visual.visualize_dataset_html import visualize_d
 from operating_platform.core.daemon import Daemon
 from operating_platform.core.record import Record, RecordConfig
 from operating_platform.core.replay import DatasetReplayConfig, ReplayConfig, replay
+from operating_platform.robot.robots.configs import RobotConfig
+print("Registered robot types:", list(RobotConfig._choice_registry.keys()))
 
 import asyncio, aiohttp
 DEFAULT_FPS = 30
 RERUN_WEB_PORT = 9195
 RERUN_WS_PORT = 9285
 
-@cache
-def is_headless():
-    """Detects if python is running without a monitor."""
-    try:
-        import pynput  # noqa
+# @cache
+# def is_headless():
+#     """Detects if python is running without a monitor."""
+#     try:
+#         import pynput  # noqa
 
-        return False
-    except Exception:
-        print(
-            "Error trying to import pynput. Switching to headless mode. "
-            "As a result, the video stream from the cameras won't be shown, "
-            "and you won't be able to change the control flow with keyboards. "
-            "For more info, see traceback below.\n"
-        )
-        traceback.print_exc()
-        print()
-        return True
+#         return False
+#     except Exception:
+#         print(
+#             "Error trying to import pynput. Switching to headless mode. "
+#             "As a result, the video stream from the cameras won't be shown, "
+#             "and you won't be able to change the control flow with keyboards. "
+#             "For more info, see traceback below.\n"
+#         )
+#         traceback.print_exc()
+#         print()
+#         return True
 
 # def init_keyboard_listener():
 #     # Allow to exit early while recording an episode or resetting the environment,
@@ -104,7 +106,7 @@ def is_headless():
 #     return listener, events
 
 
-def cameras_to_stream_json(cameras: dict[str, int]):
+def cameras_to_stream_json(cameras: Dict[str, int]):
     """
     将摄像头字典转换为包含流信息的 JSON 字符串。
     
@@ -465,7 +467,7 @@ class Coordinator:
             print(f"发送响应失败 [{cmd}]: {e}")
 
 ####################### Robot API ############################
-    def stream_info(self, info: dict[str, int]):
+    def stream_info(self, info: Dict[str, int]):
         self.cameras = info.copy()
         print(f"更新摄像头信息: {self.cameras}")
 
@@ -530,7 +532,7 @@ class ControlPipelineConfig:
     # control: ControlConfig
 
     @classmethod
-    def __get_path_fields__(cls) -> list[str]:
+    def __get_path_fields__(cls) -> List[str]:
         """This enables the parser to load config from the policy using `--policy.path=local/dir`"""
         return ["control.policy"]
     

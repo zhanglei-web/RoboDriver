@@ -6,6 +6,7 @@ import subprocess
 from copy import copy
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 import torch
@@ -73,25 +74,28 @@ def get_container_ip_from_hosts():
 def get_safe_torch_device(try_device: str, log: bool = False) -> torch.device:
     """Given a string, return a torch.device with checks on whether the device is available."""
     try_device = str(try_device)
-    match try_device:
-        case "cuda":
-            assert torch.cuda.is_available()
-            device = torch.device("cuda")
-        case "mps":
-            assert torch.backends.mps.is_available()
-            device = torch.device("mps")
-        case "cpu":
-            device = torch.device("cpu")
-            if log:
-                logging.warning("Using CPU, this will be slow.")
-        case _:
-            device = torch.device(try_device)
-            if log:
-                logging.warning(f"Using custom {try_device} device.")
+
+    if try_device == "cuda":
+        if not torch.cuda.is_available():
+            raise AssertionError("CUDA is not available.")
+        device = torch.device("cuda")
+    elif try_device == "mps":
+        if not torch.backends.mps.is_available():
+            raise AssertionError("MPS is not available.")
+        device = torch.device("mps")
+    elif try_device == "cpu":
+        device = torch.device("cpu")
+        if log:
+            logging.warning("Using CPU, this will be slow.")
+    else:
+        # Try to create a device with the given string (e.g., "cuda:1", "xla:0", etc.)
+        device = torch.device(try_device)
+        if log:
+            logging.warning(f"Using custom device: {try_device}.")
 
     return device
 
-def get_safe_dtype(dtype: torch.dtype, device: str | torch.device):
+def get_safe_dtype(dtype: torch.dtype, device: Union[str, torch.device]):
     """
     mps is currently not compatible with float64
     """

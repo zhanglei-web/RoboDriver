@@ -251,16 +251,16 @@ async def main():
     robot_socket = RobotSocket(robot_ip)
     await robot_socket.connect()
 
-    # 等待连接建立
-    try:
-        await asyncio.wait_for(asyncio.sleep(0.1), timeout=10.0)
-        if not robot_socket.running:
-            raise Exception("WebSocket 未成功连接")
-        logger.info("🔌 机器人连接已建立")
-    except (asyncio.TimeoutError, Exception) as e:
-        logger.error(f"⏳ 连接失败: {e}")
-        await robot_socket.shutdown()
-        return
+    # # 等待连接建立
+    # try:
+    #     await asyncio.wait_for(asyncio.sleep(0.1), timeout=10.0)
+    #     if not robot_socket.running:
+    #         raise Exception("WebSocket 未成功连接")
+    #     logger.info("🔌 机器人连接已建立")
+    # except (asyncio.TimeoutError, Exception) as e:
+    #     logger.error(f"⏳ 连接失败: {e}")
+    #     await robot_socket.shutdown()
+    #     return
 
     # ��️ 图像窗口映射
     topic_to_window = {

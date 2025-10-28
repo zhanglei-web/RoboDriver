@@ -1,6 +1,6 @@
 import abc
 from dataclasses import dataclass, field
-from typing import Sequence
+from typing import Sequence, Dict
 
 import draccus
 
@@ -20,7 +20,7 @@ from operating_platform.robot.robots.configs import RobotConfig, ManipulatorRobo
 @RobotConfig.register_subclass("so101")
 @dataclass
 class SO101RobotConfig(ManipulatorRobotConfig):
-    leader_arms: dict[str, MotorsBusConfig] = field(
+    leader_arms: Dict[str, MotorsBusConfig] = field(
         default_factory=lambda: {
             "main": FeetechMotorsBusConfig(
                 port="/dev/ttyACM0",
@@ -36,7 +36,7 @@ class SO101RobotConfig(ManipulatorRobotConfig):
         }
     )
 
-    follower_arms: dict[str, MotorsBusConfig] = field(
+    follower_arms: Dict[str, MotorsBusConfig] = field(
         default_factory=lambda: {
             "main": FeetechMotorsBusConfig(
                 port="/dev/ttyACM1",
@@ -52,7 +52,7 @@ class SO101RobotConfig(ManipulatorRobotConfig):
         }
     )
 
-    cameras: dict[str, CameraConfig] = field(
+    cameras: Dict[str, CameraConfig] = field(
         default_factory=lambda: {
             "image_top": OpenCVCameraConfig(
                 camera_index=0,
@@ -77,9 +77,10 @@ class SO101RobotConfig(ManipulatorRobotConfig):
 
     use_videos: bool = False
 
-    microphones: dict[str, int] = field(
+    microphones: Dict[str, int] = field(
         default_factory=lambda: {
             # "audio_right": 2,
             # "audio_left": 4,
         }
     )
+    

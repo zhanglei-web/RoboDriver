@@ -1,17 +1,16 @@
 #!/bin/bash
 
 # 配置参数
-CONTAINER_NAME=dr-container-so101-v1
+CONTAINER_NAME=dr-container-galbot-g1
 PROJECT_DIR="/WanX-EI-Studio"
-CONDA_ENV1="wanx-studio"
-CONDA_ENV2="wanx-robot-so101"
-DATAFLOW_PATH_ROBOT_SO101="operating_platform/robot/robots/so101_v1/dora_teleoperate_dataflow.yml"
+CONDA_ENV1="wanx-studio-galbot"
 TIMEOUT=30  # 等待超时时间（秒）
 CLEANED_UP=false
 IN_CONTAINER_MODE=false  # 容器模式标志
 OVERWRITE_LOGS=false     # 是否覆盖日志标志
 
-HOST_HOME_DIR=“/opt/wanx_studio”
+# 修复：使用英文路径，不要中文引号！
+HOST_HOME_DIR=/opt/wanx_studio
 HOST_LOG_DIR="${HOST_HOME_DIR}/log"
 HOST_CONFIG_DIR="${HOST_HOME_DIR}/config"
 
@@ -90,7 +89,6 @@ cleanup() {
         if docker inspect --type=container "$CONTAINER_NAME" &>/dev/null; then
             log "尝试终止容器内的关键进程..."
 
-            # 定义一个辅助函数来执行命令并输出结果
             execute_in_container_with_result() {
                 local cmd="$1"
                 local desc="$2"
@@ -103,16 +101,14 @@ cleanup() {
                 fi
             }
 
-            # 终止容器内相关进程
-            execute_in_container_with_result "pkill -f '$DATAFLOW_PATH_ROBOT_SO101'" "终止 dora ROBOT 数据流进程"
+            # 移除未定义的 DATAFLOW_PATH_ROBOT_SO101 相关清理
             execute_in_container_with_result "pkill -f 'coordinator.py'" "终止 coordinator.py 进程"
             execute_in_container_with_result "pkill -f 'dora-daemon'" "终止 dora-daemon 守护进程"
 
-            # 可选：等待几秒确保进程优雅退出
             sleep 2
         fi
         
-        # 停止容器（如果仍在运行）
+        # 停止容器
         if docker inspect --type=container "$CONTAINER_NAME" &>/dev/null; then
             log "停止容器 $CONTAINER_NAME..."
             docker stop "$CONTAINER_NAME" > /dev/null 2>&1 || true
@@ -123,7 +119,6 @@ cleanup() {
     fi
 }
 
-# 捕获中断信号
 trap cleanup INT TERM EXIT
 
 # 检查容器是否存在
@@ -133,22 +128,12 @@ check_container() {
     fi
 }
 
-# 等待容器就绪（检查视频设备）
 wait_for_container() {
     log "等待容器就绪..."
-    local start_time=$(date +%s)
-    
-    while ! docker exec "$CONTAINER_NAME" sh -c "ls /dev/video* >/dev/null 2>&1"; do
-        sleep 1
-        local current_time=$(date +%s)
-        if (( current_time - start_time > TIMEOUT )); then
-            error "等待视频设备挂载超时"
-        fi
-    done
-    log "视频设备已就绪"
+    # 注释掉视频设备检查（如不需要）
+    log "容器已启动（跳过视频设备检查）"
 }
 
-# 执行容器内命令 (宿主机模式)
 execute_in_container() {
     local cmd="$1"
     local log_file="$2"
@@ -159,13 +144,12 @@ execute_in_container() {
     echo $! >> .pids
 }
 
-# 执行本地命令 (容器模式)
 execute_local() {
     local cmd="$1"
     local log_file="$2"
     
     log "在容器内执行命令: $cmd"
-    (eval "$cmd") > >(tee -a "$log_file") 2>&1 &
+    bash -c "$cmd" > >(tee -a "$log_file") 2>&1 &
     echo $! >> .pids
 }
 
@@ -184,79 +168,56 @@ if [ "$IN_CONTAINER_MODE" = false ]; then
     wait_for_container
 else
     log "运行模式: 容器模式（直接在容器内运行）"
-    # 容器模式下确保日志目录存在
-    mkdir -p logs
 fi
 
-# 确保日志目录存在（两种模式都需要）
-mkdir -p logs
+# 创建主目录结构
+mkdir -p "$HOST_HOME_DIR" "$HOST_LOG_DIR" "$HOST_CONFIG_DIR"
 
-# 处理日志覆盖选项
+# 创建日志子目录
+COORDINATOR_LOG_DIR="$HOST_LOG_DIR/coordinator"
+DATAFLOW_LOG_DIR="$HOST_LOG_DIR/dataflow"
+mkdir -p "$COORDINATOR_LOG_DIR" "$DATAFLOW_LOG_DIR"
+
+# 处理日志覆盖
 if [ "$OVERWRITE_LOGS" = true ]; then
     log "覆盖日志模式：清空旧日志文件"
-    > logs/coordinator.log
-    > logs/dataflow_so101.log
+    > "$COORDINATOR_LOG_DIR/last_run.log" 2>/dev/null || true
+    > "$DATAFLOW_LOG_DIR/last_run.log" 2>/dev/null || true
 else
     log "追加日志模式：将新日志追加到现有文件"
 fi
 
+# 获取机器编号
+if [ -f "$HOST_CONFIG_DIR/machine_code" ]; then
+    MACHINE_ID=$(cat "$HOST_CONFIG_DIR/machine_code")
+else
+    error "机器编号文件不存在: $HOST_CONFIG_DIR/machine_code"
+fi
+
+# 使用时间戳定义日志文件
+CURRENT_TIME=$(date "+%Y%m%d_%H%M%S")
+COORDINATOR_LOG="$COORDINATOR_LOG_DIR/${MACHINE_ID}__${CURRENT_TIME}.log"
+# DATAFLOW_LOG="$DATAFLOW_LOG_DIR/${MACHINE_ID}__${CURRENT_TIME}.log"  # 暂未使用
+
 # 准备conda激活命令
 CONDA_ACTIVATE="source /opt/conda/etc/profile.d/conda.sh && conda activate"
 
-# 清理旧的PID文件
+# 清理旧PID
 rm -f .pids
 
-# 根据运行模式选择执行函数
+# 选择执行函数
 if [ "$IN_CONTAINER_MODE" = false ]; then
     EXEC_FUNCTION="execute_in_container"
 else
     EXEC_FUNCTION="execute_local"
 fi
 
-# 检查主目录是否存在，不存在则创建
-if [ ! -d "$HOST_HOME_DIR" ]; then
-    echo "创建主目录: $HOST_HOME_DIR"
-    mkdir -p "$HOST_HOME_DIR"
-fi
-
-# 检查log路径是否存在，不存在则创建
-if [ ! -d "$HOST_LOG_DIR" ]; then
-    echo "创建日志目录: $HOST_LOG_DIR"
-    mkdir -p "$HOST_LOG_DIR"
-else
-    echo "日志目录已存在: $HOST_LOG_DIR"
-fi
-
-echo "目录检查完成"
-
-# 获取当前时间戳
-CURRENT_TIME=$(date "+%Y%m%d_%H%M%S")
-
-# 获取机器编号
-if [ -f "$HOST_CONFIG_DIR/machine_code" ]; then
-    MACHINE_ID=$(cat "$HOST_CONFIG_DIR/machine_code")
-else
-    echo "错误：机器编号文件不存在 $HOST_CONFIG_DIR/machine_code"
-    exit 1
-fi
-
-# 使用时间戳定义日志文件名
-COORDINATOR_LOG="$HOST_LOG_DIR/coordinator/${MACHINE_ID}__${CURRENT_TIME}.log"
-DATAFLOW_LOG="$HOST_LOG_DIR/dataflow/${MACHINE_ID}__${CURRENT_TIME}.log"
-
 log "启动协调器..."
-$EXEC_FUNCTION "cd $PROJECT_DIR && $CONDA_ACTIVATE $CONDA_ENV1 && python operating_platform/core/coordinator.py --robot.type=so101" "$COORDINATOR_LOG"
-
-sleep 3 
-
-# 并行执行任务
-log "启动ROBOT数据流..."
-$EXEC_FUNCTION "cd $PROJECT_DIR && $CONDA_ACTIVATE $CONDA_ENV2 && dora run $DATAFLOW_PATH_ROBOT_SO101" "$DATAFLOW_LOG"
+$EXEC_FUNCTION "cd $PROJECT_DIR && $CONDA_ACTIVATE $CONDA_ENV1 && python operating_platform/core/coordinator.py --robot.type=galbot_g1" "$COORDINATOR_LOG"
 
 log "所有进程已启动，PID记录在.pids文件中"
 log "监控日志文件："
 echo "- $COORDINATOR_LOG"
-echo "- $DATAFLOW_LOG"
 
-# 持续运行直到收到中断信号
+# 等待所有后台进程
 wait

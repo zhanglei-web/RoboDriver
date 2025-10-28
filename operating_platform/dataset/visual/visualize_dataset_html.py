@@ -18,7 +18,7 @@ local$ python operating_platform/dataset/visual/visualize_dataset_html.py \
     --repo-id lerobot/pusht
 ```
 """
-
+from __future__ import annotations
 import argparse
 import csv
 import json

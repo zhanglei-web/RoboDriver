@@ -348,7 +348,6 @@ class FlaskServer:
             level=logging.DEBUG,
             format='%(asctime)s - %(levelname)s - %(message)s',
             filemode="a",
-            encoding='utf-8'  # Python 3.9+ 支持
         )
         # 添加控制台输出
         console_handler = logging.StreamHandler()

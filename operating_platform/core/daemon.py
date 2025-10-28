@@ -1,5 +1,5 @@
 # !!! Notice: daemon will combine with robot。TODO
-
+from __future__ import annotations
 import time
 import torch
 import logging

@@ -11,10 +11,6 @@ CLEANED_UP=false
 IN_CONTAINER_MODE=false  # 容器模式标志
 OVERWRITE_LOGS=false     # 是否覆盖日志标志
 
-HOST_HOME_DIR=“/opt/wanx_studio”
-HOST_LOG_DIR="${HOST_HOME_DIR}/log"
-HOST_CONFIG_DIR="${HOST_HOME_DIR}/config"
-
 # 显示帮助信息
 show_help() {
     echo "用法: $0 [选项]"
@@ -213,50 +209,19 @@ else
     EXEC_FUNCTION="execute_local"
 fi
 
-# 检查主目录是否存在，不存在则创建
-if [ ! -d "$HOST_HOME_DIR" ]; then
-    echo "创建主目录: $HOST_HOME_DIR"
-    mkdir -p "$HOST_HOME_DIR"
-fi
-
-# 检查log路径是否存在，不存在则创建
-if [ ! -d "$HOST_LOG_DIR" ]; then
-    echo "创建日志目录: $HOST_LOG_DIR"
-    mkdir -p "$HOST_LOG_DIR"
-else
-    echo "日志目录已存在: $HOST_LOG_DIR"
-fi
-
-echo "目录检查完成"
-
-# 获取当前时间戳
-CURRENT_TIME=$(date "+%Y%m%d_%H%M%S")
-
-# 获取机器编号
-if [ -f "$HOST_CONFIG_DIR/machine_code" ]; then
-    MACHINE_ID=$(cat "$HOST_CONFIG_DIR/machine_code")
-else
-    echo "错误：机器编号文件不存在 $HOST_CONFIG_DIR/machine_code"
-    exit 1
-fi
-
-# 使用时间戳定义日志文件名
-COORDINATOR_LOG="$HOST_LOG_DIR/coordinator/${MACHINE_ID}__${CURRENT_TIME}.log"
-DATAFLOW_LOG="$HOST_LOG_DIR/dataflow/${MACHINE_ID}__${CURRENT_TIME}.log"
-
 log "启动协调器..."
-$EXEC_FUNCTION "cd $PROJECT_DIR && $CONDA_ACTIVATE $CONDA_ENV1 && python operating_platform/core/coordinator.py --robot.type=so101" "$COORDINATOR_LOG"
+$EXEC_FUNCTION "cd $PROJECT_DIR && $CONDA_ACTIVATE $CONDA_ENV1 && python operating_platform/core/coordinator.py --robot.type=so101" "logs/coordinator.log"
 
 sleep 3 
 
 # 并行执行任务
 log "启动ROBOT数据流..."
-$EXEC_FUNCTION "cd $PROJECT_DIR && $CONDA_ACTIVATE $CONDA_ENV2 && dora run $DATAFLOW_PATH_ROBOT_SO101" "$DATAFLOW_LOG"
+$EXEC_FUNCTION "cd $PROJECT_DIR && $CONDA_ACTIVATE $CONDA_ENV2 && dora run $DATAFLOW_PATH_ROBOT_SO101" "logs/dataflow_so101.log"
 
 log "所有进程已启动，PID记录在.pids文件中"
 log "监控日志文件："
-echo "- $COORDINATOR_LOG"
-echo "- $DATAFLOW_LOG"
+echo "- logs/coordinator.log"
+echo "- logs/dataflow_so101.log"
 
 # 持续运行直到收到中断信号
 wait
