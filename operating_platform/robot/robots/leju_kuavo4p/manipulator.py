@@ -15,8 +15,8 @@ from pathlib import Path
 import sys
 import rospy
 from cv_bridge import CvBridge, CvBridgeError
-from sensor_msgs.msg import Image
-from kuavo_msgs.msg import sensorsData
+from sensor_msgs.msg import Image, JointState
+from kuavo_msgs.msg import sensorsData 
 
 from operating_platform.robot.robots.utils import RobotDeviceNotConnectedError
 from operating_platform.robot.robots.leju_kuavo4p.config import LejuKuavo4pRobotConfig
@@ -40,6 +40,7 @@ class RobotROSNode:
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.image_callback)
         self.sensor_sub = rospy.Subscriber("/sensors_data_raw", sensorsData, self.sensor_callback)
+        self.dexhand_sub = rospy.Subscriber("/dexhand/state", JointState, self.dexhand_callback)
         
         # 图像缓存（线程安全）
         self.latest_images = {}
@@ -47,10 +48,7 @@ class RobotROSNode:
 
         # 状态数据（线程安全）
         self.arm_joint_data = {}
-        self.dexhand_data = {
-            "right_dexhand": [],
-            "left_dexhand": []
-        }
+        self.dexhand_data = {}
         self.head_data = {}
         self.state_lock = threading.Lock()  # ← 补充：用于保护状态数据
 
@@ -132,7 +130,12 @@ class RobotROSNode:
             self.arm_joint_data["left_arm"] = list(joint_q[12:19])   # 7 DoF
             self.arm_joint_data["right_arm"] = list(joint_q[19:26])  # 7 DoF
             self.head_data["head"] = [joint_q[26], joint_q[27]]
-
+        
+    def dexhand_callback(self, msg):
+        dexhand_position = msg.position
+        with self.state_lock:
+            self.dexhand_data["left_dexhand"] = list(dexhand_position[0:6])
+            self.dexhand_data["right_dexhand"] = list(dexhand_position[6:12])
 
     def get_arm_state(self, side):
         """获取手臂状态，side: 'left' or 'right'"""
