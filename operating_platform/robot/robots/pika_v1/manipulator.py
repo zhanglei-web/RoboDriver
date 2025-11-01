@@ -21,7 +21,7 @@ import zmq
 
 
 from operating_platform.robot.robots.utils import RobotDeviceNotConnectedError
-from operating_platform.robot.robots.configs import PikaV1RobotConfig
+from operating_platform.robot.robots.pika_v1 import PikaV1RobotConfig
 from operating_platform.robot.robots.com_configs.cameras import CameraConfig, OpenCVCameraConfig
 
 from operating_platform.robot.robots.camera import Camera

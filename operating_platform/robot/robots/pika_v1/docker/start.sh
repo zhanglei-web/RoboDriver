@@ -2,7 +2,7 @@
 
 # 配置参数
 CONTAINER_NAME=dr-container-pika-v1
-PROJECT_DIR="/Operating-Platform"
+PROJECT_DIR="/WanX-EI-Studio"
 CONDA_ENV1="op"
 CONDA_ENV2="op-component-vive"
 CONDA_ENV3="op-robot-pika"
