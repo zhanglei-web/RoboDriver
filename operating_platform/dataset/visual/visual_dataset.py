@@ -60,6 +60,7 @@ local$ rerun ws://localhost:9087
 ```
 
 """
+from __future__ import annotations
 import webbrowser
 
 import argparse

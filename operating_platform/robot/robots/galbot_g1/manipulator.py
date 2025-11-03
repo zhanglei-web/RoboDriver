@@ -13,8 +13,8 @@ import torch
 from typing import Any, Dict, Optional
 
 os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'python'
-# current_dir = os.path.dirname(os.path.abspath(__file__))
-# sys.path.append(os.path.join(current_dir, 'galbot'))
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(current_dir, 'galbot'))
 
 from pathlib import Path
 import sys
@@ -33,7 +33,7 @@ from galbot.sensor_proto import imu_pb2, image_pb2, camera_pb2, joy_pb2
 from galbot.tf2_proto import tf2_message_pb2
 
 from operating_platform.robot.robots.utils import RobotDeviceNotConnectedError
-from operating_platform.robot.robots.configs import GalbotG1RobotConfig
+from operating_platform.robot.robots.galbot_g1.config import GalbotG1RobotConfig
 from operating_platform.robot.robots.com_configs.cameras import CameraConfig, OpenCVCameraConfig, DDSCameraConfig
 from operating_platform.robot.robots.camera import Camera
 

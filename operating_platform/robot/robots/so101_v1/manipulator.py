@@ -9,6 +9,7 @@ import sys
 import json
 import numpy as np
 import torch
+import logging_mp
 
 from concurrent.futures import ThreadPoolExecutor
 from collections import deque
@@ -21,12 +22,14 @@ import cv2
 import zmq
 
 from operating_platform.robot.robots.utils import RobotDeviceNotConnectedError
-from operating_platform.robot.robots.configs import SO101RobotConfig
+from operating_platform.robot.robots.so101_v1 import SO101RobotConfig
 from operating_platform.robot.robots.com_configs.cameras import CameraConfig, OpenCVCameraConfig
 
 from operating_platform.robot.robots.camera import Camera
 from operating_platform.robot.robots.pika_v1.pika_trans_visual_dual import Transformer
 
+
+logger = logging_mp.get_logger(__name__)
 
 ipc_address_image = "ipc:///tmp/dora-zeromq-so101-image"
 ipc_address_joint = "ipc:///tmp/dora-zeromq-so101-joint"
@@ -50,7 +53,7 @@ socket_joint.setsockopt(zmq.RCVTIMEO, 2000)
 
 def so101_zmq_send(event_id, buffer, wait_time_s):
     buffer_bytes = buffer.tobytes()
-    print(f"zmq send event_id:{event_id}, value:{buffer}")
+    logger.debug(f"zmq send event_id:{event_id}, value:{buffer}")
     try:
         socket_joint.send_multipart([
             event_id.encode('utf-8'),
@@ -368,10 +371,14 @@ class SO101Manipulator:
                 success_messages.append(f"{data_type}: {', '.join(arm_received)}")
         
         # 打印成功连接信息
-        print("\n[连接成功] 所有设备已就绪:")
-        for msg in success_messages:
-            print(f"  - {msg}")
-        print(f"  总耗时: {time.perf_counter() - start_time:.2f}秒\n")
+        # print("\n[连接成功] 所有设备已就绪:")
+        # for msg in success_messages:
+        #     print(f"  - {msg}")
+        # print(f"  总耗时: {time.perf_counter() - start_time:.2f}秒\n")
+        log_message = "\n[连接成功] 所有设备已就绪:\n"
+        log_message += "\n".join(f"  - {msg}" for msg in success_messages)
+        log_message += f"\n  总耗时: {time.perf_counter() - start_time:.2f}秒\n"
+        logger.info(log_message)
         # ===========================
 
         self.is_connected = True

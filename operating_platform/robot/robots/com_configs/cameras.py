@@ -14,6 +14,7 @@
 
 import abc
 from dataclasses import dataclass
+from typing import Optional
 
 import draccus
 
@@ -40,12 +41,12 @@ class OpenCVCameraConfig(CameraConfig):
     """
 
     camera_index: int
-    fps: int | None = None
-    width: int | None = None
-    height: int | None = None
+    fps: Optional[int] = None
+    width: Optional[int] = None
+    height: Optional[int] = None
     color_mode: str = "rgb"
-    channels: int | None = None
-    rotation: int | None = None
+    channels: Optional[int] = None
+    rotation: Optional[int] = None
     mock: bool = False
 
     def __post_init__(self):
@@ -76,16 +77,16 @@ class IntelRealSenseCameraConfig(CameraConfig):
     ```
     """
 
-    name: str | None = None
-    serial_number: int | None = None
-    fps: int | None = None
-    width: int | None = None
-    height: int | None = None
+    name: Optional[str] = None
+    serial_number: Optional[int] = None
+    fps: Optional[int] = None
+    width: Optional[int] = None
+    height: Optional[int] = None
     color_mode: str = "rgb"
-    channels: int | None = None
+    channels: Optional[int] = None
     use_depth: bool = False
     force_hardware_reset: bool = True
-    rotation: int | None = None
+    rotation: Optional[int] = None
     mock: bool = False
 
     def __post_init__(self):
@@ -130,12 +131,12 @@ class DDSCameraConfig(CameraConfig):
 
     camera_index: int
     topic: str
-    fps: int | None = None
-    width: int | None = None
-    height: int | None = None
+    fps: Optional[int] = None
+    width: Optional[int] = None
+    height: Optional[int] = None
     color_mode: str = "rgb"
-    channels: int | None = None
-    rotation: int | None = None
+    channels: Optional[int] = None
+    rotation: Optional[int] = None
     mock: bool = False
 
     def __post_init__(self):

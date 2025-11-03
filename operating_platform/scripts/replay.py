@@ -1,3 +1,4 @@
+from __future__ import annotations
 import logging
 import time
 from dataclasses import asdict, dataclass
@@ -6,8 +7,9 @@ from pprint import pformat
 
 import draccus
 import torch
+import logging_mp
 
-from operating_platform.core.daemon import Daemon
+from operating_platform.robot.daemon import Daemon
 
 from operating_platform.dataset.dorobot_dataset import DoRobotDataset
 from operating_platform.robot.robots.utils import (
@@ -17,9 +19,12 @@ from operating_platform.robot.robots.utils import (
     busy_wait
 )
 from operating_platform.utils.utils import (
-    init_logging,
     log_say,
 )
+
+
+logging_mp.basic_config(level=logging_mp.INFO)
+logger = logging_mp.get_logger(__name__)
 
 
 @dataclass
@@ -44,7 +49,7 @@ class ReplayConfig:
 
 @draccus.wrap()
 def replay(cfg: ReplayConfig):
-    init_logging()
+
     # logging.info(pformat(asdict(cfg)))
 
     # robot = make_robot_from_config(cfg.robot)

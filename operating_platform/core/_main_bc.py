@@ -30,9 +30,9 @@ from operating_platform.dataset.dorobot_dataset import *
 from operating_platform.dataset.visual.visual_dataset import visualize_dataset
 
 # from operating_platform.core._client import Coordinator
-from operating_platform.core.daemon import Daemon
-from operating_platform.core.record import Record, RecordConfig
-from operating_platform.core.replay import DatasetReplayConfig, ReplayConfig, replay
+from operating_platform.robot.daemon import Daemon
+from operating_platform.core.recorder import Record, RecordConfig
+from operating_platform.core.replayer import DatasetReplayConfig, ReplayConfig, replay
 
 DEFAULT_FPS = 30
 

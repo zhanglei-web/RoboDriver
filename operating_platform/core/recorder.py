@@ -1,5 +1,6 @@
 import time
 import threading
+import logging_mp
 
 from deepdiff import DeepDiff
 from dataclasses import dataclass
@@ -8,10 +9,9 @@ from operating_platform.robot.robots.configs import RobotConfig
 from operating_platform.robot.robots.utils import Robot, busy_wait, safe_disconnect, make_robot_from_config
 
 from operating_platform.dataset.dorobot_dataset import *
-from operating_platform.core.daemon import Daemon
-import draccus
+from operating_platform.robot.daemon import Daemon
 from operating_platform.utils import parser
-from operating_platform.utils.utils import has_method, init_logging, log_say, get_current_git_branch, git_branch_log, get_container_ip_from_hosts
+from operating_platform.utils.utils import has_method, log_say, get_current_git_branch, git_branch_log, get_container_ip_from_hosts
 
 from operating_platform.utils.constants import DOROBOT_DATASET
 from operating_platform.utils.data_file import (
@@ -22,6 +22,8 @@ from operating_platform.utils.data_file import (
     delete_dataid_json,
     validate_session,
 )
+
+logger = logging_mp.get_logger(__name__)
 
 
 def sanity_check_dataset_robot_compatibility(
@@ -43,24 +45,6 @@ def sanity_check_dataset_robot_compatibility(
         raise ValueError(
             "Dataset metadata compatibility check failed with mismatches:\n" + "\n".join(mismatches)
         )
-
-
-# def sanity_check_dataset_name(repo_id, policy_cfg):
-#     _, dataset_name = repo_id.split("/")
-#     # either repo_id doesnt start with "eval_" and there is no policy
-#     # or repo_id starts with "eval_" and there is a policy
-
-#     # Check if dataset_name starts with "eval_" but policy is missing
-#     if dataset_name.startswith("eval_") and policy_cfg is None:
-#         raise ValueError(
-#             f"Your dataset name begins with 'eval_' ({dataset_name}), but no policy is provided ({policy_cfg.type})."
-#         )
-
-#     # Check if dataset_name does not start with "eval_" but policy is provided
-#     if not dataset_name.startswith("eval_") and policy_cfg is not None:
-#         raise ValueError(
-#             f"Your dataset name does not begin with 'eval_' ({dataset_name}), but a policy is provided ({policy_cfg.type})."
-#         )
 
 
 @dataclass
@@ -133,8 +117,6 @@ class Record:
                 )
             sanity_check_dataset_robot_compatibility(self.dataset, robot, record_cfg.fps, record_cfg.video)
         else:
-            # Create empty dataset or load existing saved episodes
-            # sanity_check_dataset_name(record_cfg.repo_id, record_cfg.policy)
             self.dataset = DoRobotDataset.create(
                 record_cfg.repo_id,
                 record_cfg.fps,
@@ -176,8 +158,6 @@ class Record:
             self.thread.join()
             self.dataset.stop_audio_writer()
 
-        # stop_recording(robot, listener, record_cfg.display_cameras)
-        # log_say("Stop recording", record_cfg.play_sounds, blocking=True)
 
     def save(self) -> dict:
         print("will save_episode")
@@ -235,52 +215,3 @@ class Record:
             self.dataset.remove_episode(self.last_record_episode_index)
         else:
             self.dataset.clear_episode_buffer()
-
-
-# def stop_recording(robot, listener, display_cameras):
-#     robot.disconnect()
-
-#     if not is_headless():
-#         if listener is not None:
-#             listener.stop()
-
-#         if display_cameras:
-#             # cv2.destroyAllWindows()
-#             pass
-
-# @dataclass
-# class RecordConfig:
-#     robot: Robot
-#     dataset: DatasetReplayConfig
-#     # Use vocal synthesis to read events.
-#     play_sounds: bool = False
-
-@dataclass
-class ControlPipelineConfig:
-    robot: RobotConfig
-    # control: ControlConfig
-    record: RecordConfig
-
-    @classmethod
-    def __get_path_fields__(cls) -> list[str]:
-        """This enables the parser to load config from the policy using `--policy.path=local/dir`"""
-        return ["control.policy"]
-
-@parser.wrap()
-def record(cfg: ControlPipelineConfig):
-    init_logging()
-    git_branch_log()
-
-    # daemon = Daemon(fps=DEFAULT_FPS)
-    # daemon.start(cfg.robot)
-
-    # robot_daemon = Record(cfg.fps,cfg.)
-
-    # robot_daemon.start()
-
-
-def main():
-    record()
-
-if __name__ == "__main__":
-    main()

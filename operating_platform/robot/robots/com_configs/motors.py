@@ -14,6 +14,7 @@
 
 import abc
 from dataclasses import dataclass
+from typing import Dict, Tuple
 
 import draccus
 
@@ -24,52 +25,59 @@ class MotorsBusConfig(draccus.ChoiceRegistry, abc.ABC):
     def type(self) -> str:
         return self.get_choice_name(self.__class__)
 
+
 @MotorsBusConfig.register_subclass("pika")
 @dataclass
 class PikaMotorsBusConfig(MotorsBusConfig):
     port: str
-    motors: dict[str, tuple[int, str]]
+    motors: Dict[str, Tuple[int, str]]
     mock: bool = False
+
 
 @MotorsBusConfig.register_subclass("piper")
 @dataclass
 class PiperMotorsBusConfig(MotorsBusConfig):
     port: str
-    motors: dict[str, tuple[int, str]]
+    motors: Dict[str, Tuple[int, str]]
     mock: bool = False
+
 
 @MotorsBusConfig.register_subclass("dynamixel")
 @dataclass
 class DynamixelMotorsBusConfig(MotorsBusConfig):
     port: str
-    motors: dict[str, tuple[int, str]]
+    motors: Dict[str, Tuple[int, str]]
     mock: bool = False
+
 
 @MotorsBusConfig.register_subclass("feetech")
 @dataclass
 class FeetechMotorsBusConfig(MotorsBusConfig):
     port: str
-    motors: dict[str, tuple[int, str]]
+    motors: Dict[str, Tuple[int, str]]
     mock: bool = False
+
 
 @MotorsBusConfig.register_subclass("ros")
 @dataclass
 class RosMotorsBusConfig(MotorsBusConfig):
     topic: str
-    motors: dict[str, tuple[int, str]]
+    motors: Dict[str, Tuple[int, str]]
     mock: bool = False
+
 
 @MotorsBusConfig.register_subclass("dds")
 @dataclass
 class DDSMotorsBusConfig(MotorsBusConfig):
     topic: str
     group: str
-    motors: dict[str, tuple[int, str]]
+    motors: Dict[str, Tuple[int, str]]
     mock: bool = False
 
-@MotorsBusConfig.register_subclass("dexterous_hand")  
-@dataclass  
-class DexterousHandMotorsBusConfig(MotorsBusConfig):  
-    port: str   
-    motors: dict[str, tuple[int, str]]    
-    mock: bool = False 
+
+@MotorsBusConfig.register_subclass("dexterous_hand")
+@dataclass
+class DexterousHandMotorsBusConfig(MotorsBusConfig):
+    port: str
+    motors: Dict[str, Tuple[int, str]]
+    mock: bool = False

@@ -137,10 +137,10 @@ class RobotSocket:
                 show_compressed_image_from_proto(pb_message, "Right Arm Camera")
             elif "/left_arm_camera/color/image_raw" in topic:
                 show_compressed_image_from_proto(pb_message, "Left Arm Camera")
-            elif "/front_head_camera/right_color/image_raw" in topic:
-                show_compressed_image_from_proto(pb_message, "Front Head Right Camera")
-            elif "/front_head_camera/left_color/image_raw" in topic:
-                show_compressed_image_from_proto(pb_message, "Front Head Left Camera")
+            # elif "/front_head_camera/right_color/image_raw" in topic:
+            #     show_compressed_image_from_proto(pb_message, "Front Head Right Camera")
+            # elif "/front_head_camera/left_color/image_raw" in topic:
+            #     show_compressed_image_from_proto(pb_message, "Front Head Left Camera")
             elif "singorix/wbcs/sensor" in topic:
             # elif "singorix_omnilink/scaled_device_robot_data" in topic:
                 # print(f"📊 Sensor message size: {len(data_bytes)} bytes")
@@ -286,19 +286,19 @@ async def main():
     robot_socket = RobotSocket(robot_ip)
     connect_task = asyncio.create_task(robot_socket.connect())
 
-    try:
-        # 等待连接建立（可选：加超时或重试机制）
-        await asyncio.wait_for(connect_task, timeout=10.0)
-        logger.info("🔌 机器人连接已建立")
+    # try:
+    #     # 等待连接建立（可选：加超时或重试机制）
+    #     await asyncio.wait_for(connect_task, timeout=10.0)
+    #     logger.info("🔌 机器人连接已建立")
 
-    except asyncio.TimeoutError:
-        logger.error("⏳ 连接超时，程序退出")
-        await robot_socket.shutdown()
-        return
-    except Exception as e:
-        logger.error(f"❌ 连接失败: {e}")
-        await robot_socket.shutdown()
-        return
+    # except asyncio.TimeoutError:
+    #     logger.error("⏳ 连接超时，程序退出")
+    #     await robot_socket.shutdown()
+    #     return
+    # except Exception as e:
+    #     logger.error(f"❌ 连接失败: {e}")
+    #     await robot_socket.shutdown()
+    #     return
     
     try:
         while True:

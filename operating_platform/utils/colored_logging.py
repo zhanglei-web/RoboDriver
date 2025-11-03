@@ -1,5 +1,3 @@
-# colored_logging.py
-
 import logging
 import colorama
 import os
