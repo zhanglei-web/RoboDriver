@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field, asdict
-from typing import List, Optional
+from typing import List, Optional, Dict
 import json
 import requests
 import threading
 import time
 import abc
-
+import draccus
 
 @dataclass
 class CameraInfo:
@@ -47,14 +47,28 @@ class ArmStatus:
         else:
             self.number = len(self.information)
  
+@dataclass
+class Specifications:
+    end_type: str = "Default"
+    fps: int = 30
+    camera: Optional[CameraStatus] = None
+    arm: Optional[ArmStatus] = None
 
 @dataclass
-class RobotStatus(abc.ABC):
-    device_name: str = ""
-    device_body: str = ""
-    end_type: str = ""
-    fps: int = 30
+class RobotStatus(draccus.ChoiceRegistry, abc.ABC):
+    device_name: str = "Default"
+    device_body: str = "Default"
+    specifications: Specifications = field(default_factory=Specifications)
 
+    @property
+    def type(self) -> str:
+        return self.get_choice_name(self.__class__)
+    
+    def to_dict(self) -> dict:
+        return asdict(self)
+ 
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict(), ensure_ascii=False)
 
 
 # @dataclass

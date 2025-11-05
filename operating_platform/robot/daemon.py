@@ -61,7 +61,7 @@ class Daemon:
         self.pre_action: Union[Any, Dict[str, torch.Tensor]] = None
         self.obs_action: Union[Any, Dict[str, torch.Tensor]] = None
         self.observation: Union[Any, Dict[str, torch.Tensor]] = None
-        self.status: Optional[Any] = None
+        self.status: Optional[str] = None
 
         self.robot = None
 
@@ -128,7 +128,7 @@ class Daemon:
                 return
             self.observation = value.copy()
 
-    def set_status(self, value: Optional[Any]):
+    def set_status(self, value: Optional[str]):
         with self.data_lock:
             if value is None:
                 return
@@ -152,7 +152,7 @@ class Daemon:
                 return None
             return self.observation.copy()
         
-    def get_status(self) -> Optional[Any]:
+    def get_status(self) -> Optional[str]:
         with self.data_lock:
             if self.status is None:
                 return None

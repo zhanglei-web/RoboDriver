@@ -5,6 +5,7 @@ import logging_mp
 from typing import Protocol
 
 from operating_platform.robot.robots.configs import RobotConfig
+from operating_platform.robot.robots.statuses import RobotStatus
 from operating_platform.robot.robots import (  # noqa: F401
     so101_v1,
     galbot_g1,
@@ -105,7 +106,7 @@ def make_robot_from_config(config: RobotConfig):
         return PikaV1Manipulator(config)
     
     elif config.type == "so101":
-        from operating_platform.robot.robots.so101_v1.manipulator import SO101Manipulator
+        from operating_platform.robot.robots.so101_v1.src.manipulator import SO101Manipulator
         logger.info("In SO101Manipulator")
         return SO101Manipulator(config)
 
@@ -139,8 +140,8 @@ def make_robot_from_config(config: RobotConfig):
         raise ValueError(f"Robot type is not available.")
     
 
-def safe_update_status(robot: Robot) -> None:
+def safe_update_status(robot: Robot) -> str:
     if hasattr(robot, 'update_status'):
         robot.update_status()
     else:
-        print(f"[{robot.robot_type}] Status: idle (fallback default)")
+        return RobotStatus.to_json()

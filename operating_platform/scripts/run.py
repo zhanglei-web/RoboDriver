@@ -8,6 +8,7 @@ from typing import Dict, List
 from dataclasses import dataclass, asdict
 
 from operating_platform.core.coordinator import Coordinator
+from operating_platform.core.monitor import Monitor
 from operating_platform.robot.daemon import Daemon
 from operating_platform.robot.robots.configs import RobotConfig
 
@@ -37,6 +38,9 @@ async def async_main(cfg: ControlPipelineConfig):
 
     daemon = Daemon(fps=DEFAULT_FPS)
     daemon.start(cfg.robot)
+
+    monitor = Monitor(daemon)
+    monitor.start()
 
     coordinator = Coordinator(daemon)
     await coordinator.start()

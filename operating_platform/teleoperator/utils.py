@@ -98,7 +98,7 @@ def make_robot_from_config(config: RobotConfig):
         return PikaV1Manipulator(config)
     
     elif config.type == "so101":
-        from operating_platform.robot.robots.so101_v1.manipulator import SO101Manipulator
+        from operating_platform.robot.robots.so101_v1.src.manipulator import SO101Manipulator
         print("In SO101Manipulator")
         return SO101Manipulator(config)
 
