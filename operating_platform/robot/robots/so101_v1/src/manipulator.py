@@ -1,28 +1,17 @@
-import pickle
 import time
-from dataclasses import dataclass, field, replace
-from pathlib import Path
-import os
-import ctypes
-import platform
-import sys
 import json
 import numpy as np
 import torch
 import logging_mp
-
-from concurrent.futures import ThreadPoolExecutor
-from collections import deque
-from functools import cache
-from typing import Any
-
 import threading
 import cv2
-
 import zmq
+
+from typing import Any, Dict
 
 from operating_platform.robot.robots.utils import RobotDeviceNotConnectedError
 from operating_platform.robot.robots.so101_v1 import SO101RobotConfig
+from operating_platform.robot.robots.so101_v1 import SO101RobotStatus
 from operating_platform.robot.robots.com_configs.cameras import CameraConfig, OpenCVCameraConfig
 
 from operating_platform.robot.robots.camera import Camera
@@ -30,12 +19,16 @@ from operating_platform.robot.robots.pika_v1.pika_trans_visual_dual import Trans
 
 
 logger = logging_mp.get_logger(__name__)
+CONNECT_TIMEOUT_FRAME = 10
+
 
 ipc_address_image = "ipc:///tmp/dora-zeromq-so101-image"
 ipc_address_joint = "ipc:///tmp/dora-zeromq-so101-joint"
 
 recv_images = {}
 recv_joint = {}
+recv_images_status: Dict[str, int] = {}
+recv_joint_status: Dict[str, int] = {}
 lock = threading.Lock()  # 线程锁
 
 running_recv_image_server = True
@@ -75,9 +68,6 @@ def recv_image_server():
             buffer_bytes = message_parts[1]
             metadata = json.loads(message_parts[2].decode('utf-8'))
 
-            # print(f"Received event_id = {event_id}")
-            # print(f"len(message_parts) = {len(message_parts)}")
-            
             if 'image' in event_id:
                 # 解码图像
                 img_array = np.frombuffer(buffer_bytes, dtype=np.uint8)
@@ -106,12 +96,13 @@ def recv_image_server():
                     with lock:
                         # print(f"Received event_id = {event_id}")
                         recv_images[event_id] = frame
+                        recv_images_status[event_id] = CONNECT_TIMEOUT_FRAME
 
         except zmq.Again:
-            print(f"SO101 Image Received Timeout")
+            logger.warning(f"SO101 Image Received Timeout")
             continue
         except Exception as e:
-            print("recv image error:", e)
+            logger.error("recv image error:", e)
             break
 
 
@@ -129,17 +120,15 @@ def recv_joint_server():
             if 'joint' in event_id:
                 joint_array = np.frombuffer(buffer_bytes, dtype=np.float32)
                 if joint_array is not None:
-                    # print(f"Received pose data for event_id: {event_id}")
-                    # print(f"Pose array shape: {pose_array.shape}")
-                    # print(f"Pose array values: {pose_array}")
                     with lock:
                         recv_joint[event_id] = joint_array
+                        recv_joint_status[event_id] = CONNECT_TIMEOUT_FRAME
 
         except zmq.Again:
-            print(f"SO101 Joint Received Timeout")
+            logger.warning(f"SO101 Joint Received Timeout")
             continue
         except Exception as e:
-            print("recv joint error:", e)
+            logger.error("recv joint error:", e)
             break
 
 
@@ -192,6 +181,7 @@ def make_cameras_from_configs(camera_configs: dict[str, CameraConfig]) -> list[C
 class SO101Manipulator:
     def __init__(self, config: SO101RobotConfig):
         self.config = config
+        self.status = SO101RobotStatus()
         self.robot_type = self.config.type
 
         self.use_videos = self.config.use_videos
@@ -381,6 +371,11 @@ class SO101Manipulator:
         logger.info(log_message)
         # ===========================
 
+        for i in range(self.status.specifications.camera.number):
+            self.status.specifications.camera.information[i].is_connect = True
+        for i in range(self.status.specifications.arm.number):
+            self.status.specifications.arm.information[i].is_connect = True
+
         self.is_connected = True
     
     @property
@@ -403,6 +398,12 @@ class SO101Manipulator:
             raise RobotDeviceNotConnectedError(
                 "Aloha is not connected. You need to run `robot.connect()`."
             )
+        
+        for key in recv_images_status:
+            recv_images_status[key] = max(0, recv_images_status[key] - 1)
+
+        for key in recv_joint_status:
+            recv_joint_status[key] = max(0, recv_joint_status[key] - 1)
 
         if not record_data:
             return
@@ -471,105 +472,6 @@ class SO101Manipulator:
         # print("end teleoperate record")
         return obs_dict, action_dict
 
-
-    # def capture_observation(self):
-    #     if not self.is_connected:
-    #         raise RobotDeviceNotConnectedError(
-    #             "KochRobot is not connected. You need to run `robot.connect()`."
-    #         )
-
-    #     #调用从臂api获取当前关节角度 
-    #     for name in self.leader_arms:
-    #         now = time.perf_counter()
-    #         self.pDll.Get_Joint_Degree(self.nSocket,self.joint_obs_read)  
-    #         #夹爪通信获取当前夹爪开合度
-    #         #   giper_read=ctypes.c_int()
-    #         #   self.pDll.Get_Read_Holding_Registers(self.nSocket,1,40005,1,ctypes.byref(giper_read))
-    #         #   #八位数组存储关节和夹爪数据
-    #         self.joint_obs_present[:7]=self.joint_obs_read[:]
-    #         #   self.joint_obs_present[7]=giper_read.value
-    #         if self.gipflag_send==1:
-    #             self.joint_obs_present[7]=100
-    #         elif self.gipflag_send==0:
-    #             self.joint_obs_present[7]=10
-    #         # self.joint_obs_present = np.zeros(8)  # 创建一个包含八个0的 NumPy 数组
-    #         self.logs[f"read_follower_{name}_pos_dt_s"] = time.perf_counter() - now
-
-    #     # Create state by concatenating follower current position
-    #     #上传当前机械臂状态
-    #     state = []
-    #     self.joint_obs_present = np.round(self.joint_obs_present, 2)
-    #     joint_array_np = np.array( self.joint_obs_present)
-    #     state = np.array([joint_array_np], dtype=np.float32)
-    #     state = np.concatenate(state, dtype=np.float32)
-
-    #     # Capture images from cameras
-    #     images = {}
-    #     for name in self.cameras:
-    #         now = time.perf_counter()
-    #         images[name] = self.cameras[name].async_read()
-    #         self.logs[f"read_camera_{name}_dt_s"] = self.cameras[name].logs["delta_timestamp_s"]
-    #         self.logs[f"async_read_camera_{name}_dt_s"] = time.perf_counter() - now
-
-    #     # Populate output dictionnaries and format to pytorch
-    #     obs_dict = {}
-    #     obs_dict["observation.state"] = torch.from_numpy(state)
-    #     for name in self.cameras:
-    #         # Convert to pytorch format: channel first and float32 in [0,1]
-    #         img = torch.from_numpy(images[name])
-    #         img = img.type(torch.float32) / 255
-    #         img = img.permute(2, 0, 1).contiguous()
-    #         obs_dict[f"observation.images.{name}"] = img
-    #     return obs_dict    def capture_observation(self):
-
-    # def capture_observation(self):
-    #     if not self.is_connected:
-    #         raise RobotDeviceNotConnectedError(
-    #             "KochRobot is not connected. You need to run `robot.connect()`."
-    #         )
-
-    #     follower_pos = {}
-    #     for name in self.follower_arms:
-    #         now = time.perf_counter()
-    #         eight_byte_array = np.zeros(8, dtype=np.float32)
-    #         joint_obs_read = self.follower_arms[name].async_read_joint_degree()
-
-    #         #夹爪通信获取当前夹爪开合度
-    #         # giper_read=ctypes.c_int()
-    #         # self.pDll.Get_Read_Holding_Registers(self.nSocket,1,40000,1,ctypes.byref(giper_read))
-    #         #   #八位数组存储关节和夹爪数据
-    #         eight_byte_array[:7] = joint_obs_read[:]
-    #         # self.joint_obs_present[7]=giper_read.value
-    #         eight_byte_array[7] = self.follower_arms[name].old_grasp
-    #         # self.joint_obs_present = np.zeros(8)  # 创建一个包含八个0的 NumPy 数组
-    #         eight_byte_array = np.round(eight_byte_array, 2)
-    #         follower_pos[name] = torch.from_numpy(eight_byte_array)
-    #         self.logs[f"read_follower_{name}_pos_dt_s"] = time.perf_counter() - now
-
-    #     # Create state by concatenating follower current position
-    #     #上传当前机械臂状态
-    #     state = []
-    #     for name in self.follower_arms:
-    #         if name in follower_pos:
-    #             state.append(follower_pos[name])    
-    #     state = torch.cat(state)
-
-    #     # Capture images from cameras
-    #     images = {}
-    #     for name in self.cameras:
-    #         now = time.perf_counter()
-    #         images[name] = self.cameras[name].async_read()
-    #         images[name] = torch.from_numpy(images[name])
-    #         self.logs[f"read_camera_{name}_dt_s"] = self.cameras[name].logs["delta_timestamp_s"]
-    #         self.logs[f"async_read_camera_{name}_dt_s"] = time.perf_counter() - now
-
-    #     # Populate output dictionnaries and format to pytorch
-    #     obs_dict = {}
-    #     obs_dict["observation.state"] = state
-    #     for name in self.cameras:
-    #         obs_dict[f"observation.images.{name}"] = images[name]
-    #     return obs_dict
-
     def send_action(self, action: dict[str, Any]):
         """The provided action is expected to be a vector."""
         if not self.is_connected:
@@ -590,47 +492,21 @@ class SO101Manipulator:
 
             so101_zmq_send(f"action_joint_{name}", goal_joint_numpy, wait_time_s=0.01)
 
+    def update_status(self) -> str:
 
-    # def send_action(self, action: torch.Tensor):
-    #     """The provided action is expected to be a vector."""
-    #     if not self.is_connected:
-    #         raise RobotDeviceNotConnectedError(
-    #             "KochRobot is not connected. You need to run `robot.connect()`."
-    #         )
-    #     from_idx = 0
-    #     to_idx = 8
-    #     index = 0
-    #     action_sent = []
-    #     for name in self.follower_arms:
+        for i in range(self.status.specifications.camera.number):
+            match_name = self.status.specifications.camera.information[i].name
+            for name in recv_images_status:
+                if match_name in name:
+                    self.status.specifications.camera.information[i].is_connect = True if recv_images_status[name]>0 else False
 
-    #         goal_pos = action[index*8+from_idx:index*8+to_idx]
-    #         index+=1
+        for i in range(self.status.specifications.arm.number):
+            match_name = self.status.specifications.arm.information[i].name
+            for name in recv_joint_status:
+                if match_name in name:
+                    self.status.specifications.arm.information[i].is_connect = True if recv_joint_status[name]>0 else False
 
-    #         for i in range(7):
-    #             self.follower_arms[name].joint_send[i] = max(self.follower_arms[name].joint_n_limit[i], min(self.follower_arms[name].joint_p_limit[i], goal_pos[i]))
-            
-            
-    #         self.follower_arms[name].movej_canfd(self.follower_arms[name].joint_send)
-    #         # if (goal_pos[7]<50):
-    #         #     # ret_giper = self.pDll.Write_Single_Register(self.nSocket, 1, 40000, int(follower_goal_pos_array[7]), 1, 1)
-    #         #     ret_giper = self.pDll.Write_Single_Register(self.nSocket, 1, 40000, 0 , 1, 1)
-    #         #     self.gipflag_send=0
-    #         # #状态为闭合，且需要张开夹爪
-    #         # if (goal_pos[7]>=50):
-    #         #     # ret_giper = self.pDll.Write_Single_Register(self.nSocket, 1, 40000, int(follower_goal_pos_array[7]), 1, 1)
-    #         #     ret_giper = self.pDll.Write_Single_Register(self.nSocket, 1, 40000, 100, 1, 1)
-    #         #     self.gipflag_send=1
-    #         gripper_value = max(0, min(100, int(goal_pos[7])))
-
-    #         self.frame_counter += 1
-
-    #         self.follower_arms[name].old_grasp = gripper_value
-    #         if self.frame_counter % 5 == 0:
-    #             self.frame_counter = 0
-    #             self.follower_arms[name].write_single_register(gripper_value)
-    #         action_sent.append(goal_pos)
-
-    #     return torch.cat(action_sent)
+        return self.status.to_json()
 
     def disconnect(self):
         if not self.is_connected:

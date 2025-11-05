@@ -3,11 +3,11 @@ import torch
 import threading
 import logging_mp
 
-from typing import Any, Union, Dict
+from typing import Any, Union, Dict, Optional
 from termcolor import colored
 
 from operating_platform.robot.robots.configs import RobotConfig
-from operating_platform.robot.robots.utils import make_robot_from_config, Robot, busy_wait
+from operating_platform.robot.robots.utils import make_robot_from_config, Robot, busy_wait, safe_update_status
 
 logger = logging_mp.get_logger(__name__)
 
@@ -61,6 +61,7 @@ class Daemon:
         self.pre_action: Union[Any, Dict[str, torch.Tensor]] = None
         self.obs_action: Union[Any, Dict[str, torch.Tensor]] = None
         self.observation: Union[Any, Dict[str, torch.Tensor]] = None
+        self.status: Optional[str] = None
 
         self.robot = None
 
@@ -92,9 +93,11 @@ class Daemon:
         start_loop_t = time.perf_counter()
 
         observation, action = self.robot.teleop_step(record_data=True)
-        
+        status = self.robot.safe_update_status()
+
         self.set_observation(observation)
         self.set_obs_action(action)
+        self.set_status(status)
         
         pre_action = self.get_pre_action()
         if pre_action is not None:
@@ -125,6 +128,12 @@ class Daemon:
                 return
             self.observation = value.copy()
 
+    def set_status(self, value: Optional[str]):
+        with self.data_lock:
+            if value is None:
+                return
+            self.status = value.copy()
+
     def get_pre_action(self) -> Union[Any, Dict[str, torch.Tensor]]:
         with self.data_lock:
             if self.pre_action is None:
@@ -142,3 +151,9 @@ class Daemon:
             if self.observation is None:
                 return None
             return self.observation.copy()
+        
+    def get_status(self) -> Optional[str]:
+        with self.data_lock:
+            if self.status is None:
+                return None
+            return self.status.copy()
