@@ -28,7 +28,7 @@ class Monitor:
                 with self._lock:
                     if self.daemon.robot.status is None:
                         continue
-                    json_data = self.daemon.robot.status.to_json()
+                    json_data = self.daemon.get_status()
                     # json_data = json.dumps(self._machine_info_dict, ensure_ascii=False)
                 
                 response = requests.post(

@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import abc
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import Optional, Dict
 
 import draccus
 
@@ -48,6 +48,7 @@ class OpenCVCameraConfig(CameraConfig):
     channels: Optional[int] = None
     rotation: Optional[int] = None
     mock: bool = False
+    info: Dict = field(default_factory=dict)
 
     def __post_init__(self):
         if self.color_mode not in ["rgb", "bgr"]:
@@ -55,7 +56,6 @@ class OpenCVCameraConfig(CameraConfig):
                 f"`color_mode` is expected to be 'rgb' or 'bgr', but {self.color_mode} is provided."
             )
 
-        self.channels = 3
 
         if self.rotation not in [-90, None, 90, 180]:
             raise ValueError(f"`rotation` must be in [-90, None, 90, 180] (got {self.rotation})")

@@ -11,6 +11,7 @@ from operating_platform.robot.robots import (  # noqa: F401
     galbot_g1,
     leju_kuavo4p,
     pika_v1,
+    galaxea_v1,
 )
 
 
@@ -121,7 +122,7 @@ def make_robot_from_config(config: RobotConfig):
         return DexterousHandManipulator(config)
     
     elif config.type == "galaxea":
-        from operating_platform.robot.robots.galaxea_v1.manipulator import GALAXEAManipulator
+        from operating_platform.robot.robots.galaxea_v1.src.manipulator import GALAXEAManipulator
         logger.info("In GALAXEARobotConfig")
         return GALAXEAManipulator(config)
     

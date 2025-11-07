@@ -93,7 +93,7 @@ class Daemon:
         start_loop_t = time.perf_counter()
 
         observation, action = self.robot.teleop_step(record_data=True)
-        status = self.robot.safe_update_status()
+        status = safe_update_status()
 
         self.set_observation(observation)
         self.set_obs_action(action)
@@ -132,7 +132,7 @@ class Daemon:
         with self.data_lock:
             if value is None:
                 return
-            self.status = value.copy()
+            self.status = value
 
     def get_pre_action(self) -> Union[Any, Dict[str, torch.Tensor]]:
         with self.data_lock:
@@ -156,4 +156,4 @@ class Daemon:
         with self.data_lock:
             if self.status is None:
                 return None
-            return self.status.copy()
+            return self.status
