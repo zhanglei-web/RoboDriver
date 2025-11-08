@@ -17,7 +17,7 @@ DATAFLOW_PATH="operating_platform/robot/robots/aloha_v1/dora/robot_aloha_dataflo
 TIMEOUT=30  # 等待超时时间（秒）
 CLEANED_UP=false
 
-HOST_HOME_DIR=“/opt/wanx_studio”
+HOST_HOME_DIR="/opt/wanx_studio"
 HOST_LOG_DIR="${HOST_HOME_DIR}/log"
 HOST_CONFIG_DIR="${HOST_HOME_DIR}/config"
 
