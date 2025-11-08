@@ -146,4 +146,4 @@ def safe_update_status(robot: Robot) -> str:
     if hasattr(robot, 'update_status'):
         robot.update_status()
     else:
-        return RobotStatus.to_json()
+        return RobotStatus().to_json()
