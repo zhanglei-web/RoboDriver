@@ -12,6 +12,7 @@ from operating_platform.robot.robots import (  # noqa: F401
     leju_kuavo4p,
     pika_v1,
     galaxea_v1,
+    aloha_v1,
 )
 
 
@@ -96,7 +97,7 @@ def make_robot_from_config(config: RobotConfig):
         logger.info("In AdoraRobotConfig")
         return AdoraManipulator(config)
     
-    elif config.type == "aloha":
+    elif config.type == "aloha_v1":
         from operating_platform.robot.robots.aloha_v1.manipulator import AlohaManipulator
         logger.info("In AlohaManipulator")
         return AlohaManipulator(config)
