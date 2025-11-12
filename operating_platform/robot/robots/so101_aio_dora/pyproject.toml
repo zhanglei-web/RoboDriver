@@ -5,7 +5,6 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "robodriver_robot_so101_aio_doara"
 version = "0.1.0"
-description = "LeRobot so101 bimanual integration package"
 readme = "README.md"
 requires-python = ">=3.8"
 license = "Apache-2.0"
