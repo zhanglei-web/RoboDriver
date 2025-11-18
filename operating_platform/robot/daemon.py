@@ -58,9 +58,9 @@ class Daemon:
         self.running = True
 
         self.data_lock = threading.Lock()
-        self.pre_action: Union[Any, Dict[str, torch.Tensor]] = None
-        self.obs_action: Union[Any, Dict[str, torch.Tensor]] = None
-        self.observation: Union[Any, Dict[str, torch.Tensor]] = None
+        self.pre_action: Union[Any, Dict[str, Any]] = None
+        self.obs_action: Union[Any, Dict[str, Any]] = None
+        self.observation: Union[Any, Dict[str, Any]] = None
         self.status: Optional[str] = None
 
         self.robot = None
@@ -69,7 +69,10 @@ class Daemon:
     def cameras_info(self):
         cameras = {}
         for name, camera in self.robot.cameras.items():
-            cameras[name] = camera.camera_index
+            if hasattr(camera, "camera_index"):
+                cameras[name] = camera.camera_index
+            elif hasattr(camera, "index_or_path"):
+                cameras[name] = camera.index_or_path
         return cameras
 
     def start(self, config: RobotConfig):
@@ -92,17 +95,23 @@ class Daemon:
     def update(self):
         start_loop_t = time.perf_counter()
 
-        observation, action = self.robot.teleop_step(record_data=True)
-        status = safe_update_status(self.robot)
+        if hasattr(self.robot, 'teleop_step'):
+            observation, action = self.robot.teleop_step(record_data=True)
+            
+            self.set_observation(observation)
+            self.set_obs_action(action)
 
-        self.set_observation(observation)
-        self.set_obs_action(action)
+        else:
+            observation = self.robot.get_observation()
+            self.set_observation(observation)
+
+        status = safe_update_status(self.robot)
         self.set_status(status)
         
         pre_action = self.get_pre_action()
         if pre_action is not None:
-            action = self.robot.send_action(pre_action["action"])
-            action = {"action": action}
+            action = self.robot.send_action(pre_action)
+            # action = {"action": action}
         
         dt_s = time.perf_counter() - start_loop_t
         if self.fps is not None:
@@ -110,19 +119,19 @@ class Daemon:
 
         log_control_info(self.robot, dt_s, fps=self.fps)
 
-    def set_pre_action(self, value: Union[Any, Dict[str, torch.Tensor]]):
+    def set_pre_action(self, value: Union[Any, Dict[str, Any]]):
         with self.data_lock:
             if value is None:
                 return
             self.pre_action = value.copy()
     
-    def set_obs_action(self, value: Union[Any, Dict[str, torch.Tensor]]):
+    def set_obs_action(self, value: Union[Any, Dict[str, Any]]):
         with self.data_lock:
             if value is None:
                 return
             self.obs_action = value.copy()
 
-    def set_observation(self, value: Union[Any, Dict[str, torch.Tensor]]):
+    def set_observation(self, value: Union[Any, Dict[str, Any]]):
         with self.data_lock:
             if value is None:
                 return
@@ -134,19 +143,19 @@ class Daemon:
                 return
             self.status = value
 
-    def get_pre_action(self) -> Union[Any, Dict[str, torch.Tensor]]:
+    def get_pre_action(self) -> Union[Any, Dict[str, Any]]:
         with self.data_lock:
             if self.pre_action is None:
                 return None
             return self.pre_action.copy()
 
-    def get_obs_action(self) -> Union[Any, Dict[str, torch.Tensor]]:
+    def get_obs_action(self) -> Union[Any, Dict[str, Any]]:
         with self.data_lock:
             if self.obs_action is None:
                 return None
             return self.obs_action.copy()
     
-    def get_observation(self) -> Union[Any, Dict[str, torch.Tensor]]:
+    def get_observation(self) -> Union[Any, Dict[str, Any]]:
         with self.data_lock:
             if self.observation is None:
                 return None

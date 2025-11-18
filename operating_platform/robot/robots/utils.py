@@ -1,22 +1,24 @@
 import platform
 import time
 import logging_mp
+from typing import cast
 
 # from typing import Protocol
 
-from lerobot.robots import Robot
+from lerobot.robots import Robot, RobotConfig
 
-from operating_platform.robot.robots.configs import RobotConfig
+# from operating_platform.robot.robots.configs import RobotConfig
 # from operating_platform.robot.robots.so101_v1_dora import so101_v1_dora
+from operating_platform.utils.import_utils import make_device_from_device_class
 from operating_platform.robot.robots.statuses import RobotStatus
-from operating_platform.robot.robots import (  # noqa: F401
-    so101_v1,
-    galbot_g1,
-    leju_kuavo4p,
-    pika_v1,
-    galaxea_v1,
-    aloha_v1,
-)
+# from operating_platform.robot.robots import (  # noqa: F401
+#     so101_v1,
+#     galbot_g1,
+#     leju_kuavo4p,
+#     pika_v1,
+#     galaxea_v1,
+#     aloha_v1,
+# )
 
 
 logger = logging_mp.get_logger(__name__)
@@ -50,32 +52,32 @@ def safe_disconnect(func):
     return wrapper
 
 
-class RobotDeviceNotConnectedError(Exception):
-    """Exception raised when the robot device is not connected."""
+# class RobotDeviceNotConnectedError(Exception):
+#     """Exception raised when the robot device is not connected."""
 
-    def __init__(
-        self, message="This robot device is not connected. Try calling `robot_device.connect()` first."
-    ):
-        self.message = message
-        super().__init__(self.message)
-
-
-class RobotDeviceAlreadyConnectedError(Exception):
-    """Exception raised when the robot device is already connected."""
-
-    def __init__(
-        self,
-        message="This robot device is already connected. Try not calling `robot_device.connect()` twice.",
-    ):
-        self.message = message
-        super().__init__(self.message)
+#     def __init__(
+#         self, message="This robot device is not connected. Try calling `robot_device.connect()` first."
+#     ):
+#         self.message = message
+#         super().__init__(self.message)
 
 
-def get_arm_id(name, arm_type):
-    """Returns the string identifier of a robot arm. For instance, for a bimanual manipulator
-    like Aloha, it could be left_follower, right_follower, left_leader, or right_leader.
-    """
-    return f"{name}_{arm_type}"
+# class RobotDeviceAlreadyConnectedError(Exception):
+#     """Exception raised when the robot device is already connected."""
+
+#     def __init__(
+#         self,
+#         message="This robot device is already connected. Try not calling `robot_device.connect()` twice.",
+#     ):
+#         self.message = message
+#         super().__init__(self.message)
+
+
+# def get_arm_id(name, arm_type):
+#     """Returns the string identifier of a robot arm. For instance, for a bimanual manipulator
+#     like Aloha, it could be left_follower, right_follower, left_leader, or right_leader.
+#     """
+#     return f"{name}_{arm_type}"
 
 
 # class Robot(Protocol):
@@ -92,7 +94,7 @@ def get_arm_id(name, arm_type):
 #     def update_status(self): ...  # 声明但无实现
 
 
-def make_robot_from_config(config: RobotConfig):
+def make_robot_from_config(config: RobotConfig) -> Robot:
     logger.info("In make_robot_from_config")
 
     if config.type == "adora":
@@ -139,10 +141,12 @@ def make_robot_from_config(config: RobotConfig):
         from operating_platform.robot.robots.leju_kuavo4p.manipulator import LejuKuavo4pManipulator
         logger.info("In LejuKuavo4pRobotConfig")
         return LejuKuavo4pManipulator(config)
-    
     else:
-        logger.error("Not match robot")
-        raise ValueError(f"Robot type is not available.")
+        try:
+            return cast(Robot, make_device_from_device_class(config))
+        except Exception as e:
+            logger.critical(f"Can't create robot with config {config}")
+            raise ValueError(f"Error creating robot with config {config}: {e}") from e
     
 
 def safe_update_status(robot: Robot) -> str:
