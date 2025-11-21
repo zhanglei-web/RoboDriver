@@ -9,9 +9,9 @@ from dataclasses import dataclass, asdict
 
 from operating_platform.core.coordinator import Coordinator
 from operating_platform.core.monitor import Monitor
-from operating_platform.robot.daemon import Daemon
+from operating_platform.robots.daemon import Daemon
 # from operating_platform.robot.robots.configs import RobotConfig
-from operating_platform.teleoperator.utils import make_teleoperator_from_config
+from operating_platform.teleoperators.utils import make_teleoperator_from_config
 
 from operating_platform.utils import parser
 from operating_platform.utils.import_utils import register_third_party_devices

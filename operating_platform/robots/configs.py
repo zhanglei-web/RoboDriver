@@ -4,8 +4,8 @@ from typing import Sequence, Dict, List, Union, Optional
 
 import draccus
 
-from operating_platform.robot.robots.com_configs.cameras import CameraConfig
-from operating_platform.robot.robots.com_configs.motors import MotorsBusConfig
+from operating_platform.robots.com_configs.cameras import CameraConfig
+from operating_platform.robots.com_configs.motors import MotorsBusConfig
 
 
 @dataclass

@@ -70,7 +70,7 @@ from operating_platform.utils.video import (
     encode_video_frames,
     get_video_info,
 )
-from operating_platform.robot.robots.utils import Robot
+from operating_platform.robots.utils import Robot
 
 LEROBOT_DATASET_VERSION = "v2.1"
 DOROBOT_DATASET_VERSION = "v1.0"

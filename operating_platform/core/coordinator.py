@@ -11,7 +11,7 @@ from typing import Dict, List
 
 from operating_platform.dataset.dorobot_dataset import *
 from operating_platform.dataset.visual.visual_dataset import visualize_dataset
-from operating_platform.robot.daemon import Daemon
+from operating_platform.robots.daemon import Daemon
 from operating_platform.core.recorder import Record, RecordConfig
 from operating_platform.core.replayer import DatasetReplayConfig, ReplayConfig, replay
 from operating_platform.utils.utils import has_method, log_say, get_current_git_branch, git_branch_log, cameras_to_stream_json

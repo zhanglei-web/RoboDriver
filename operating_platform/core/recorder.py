@@ -5,12 +5,12 @@ import logging_mp
 from deepdiff import DeepDiff
 from dataclasses import dataclass
 
-from operating_platform.robot.robots.configs import RobotConfig
-from operating_platform.robot.robots.utils import  busy_wait, safe_disconnect, make_robot_from_config
+from operating_platform.robots.configs import RobotConfig
+from operating_platform.robots.utils import  busy_wait, safe_disconnect, make_robot_from_config
 
 from operating_platform.dataset.dorobot_dataset import *
 # from operating_platform.dataset.functions import get_features_from_robot_new
-from operating_platform.robot.daemon import Daemon
+from operating_platform.robots.daemon import Daemon
 from operating_platform.utils import parser
 from operating_platform.utils.utils import has_method, log_say, get_current_git_branch, git_branch_log, get_container_ip_from_hosts
 

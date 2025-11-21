@@ -6,8 +6,8 @@ import logging_mp
 from typing import Any, Union, Dict, Optional
 from termcolor import colored
 
-from operating_platform.robot.robots.configs import RobotConfig
-from operating_platform.robot.robots.utils import make_robot_from_config, Robot, busy_wait, safe_update_status
+from operating_platform.robots.configs import RobotConfig
+from operating_platform.robots.utils import make_robot_from_config, Robot, busy_wait, safe_update_status
 
 logger = logging_mp.get_logger(__name__)
 

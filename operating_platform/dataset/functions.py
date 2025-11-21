@@ -7,7 +7,7 @@ from operating_platform.dataset.backward_compatibility import (
     BackwardCompatibilityError,
     ForwardCompatibilityError,
 )
-from operating_platform.robot.robots.utils import Robot
+from operating_platform.robots.utils import Robot
 from operating_platform.utils.dataset import get_repo_versions, DEFAULT_FEATURES
 from typing import Union, Optional, List
 

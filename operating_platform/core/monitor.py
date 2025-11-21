@@ -3,7 +3,7 @@ import requests
 import json
 import time
 
-from operating_platform.robot.daemon import Daemon
+from operating_platform.robots.daemon import Daemon
 
 
 class Monitor:

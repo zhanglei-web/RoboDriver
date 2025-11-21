@@ -10,7 +10,7 @@ from lerobot.robots import Robot, RobotConfig
 # from operating_platform.robot.robots.configs import RobotConfig
 # from operating_platform.robot.robots.so101_v1_dora import so101_v1_dora
 from operating_platform.utils.import_utils import make_device_from_device_class
-from operating_platform.robot.robots.statuses import RobotStatus
+from operating_platform.robots.statuses import RobotStatus
 # from operating_platform.robot.robots import (  # noqa: F401
 #     so101_v1,
 #     galbot_g1,

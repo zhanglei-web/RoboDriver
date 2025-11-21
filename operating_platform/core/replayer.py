@@ -4,10 +4,10 @@ import logging_mp
 from dataclasses import dataclass
 from pathlib import Path
 
-from operating_platform.robot.daemon import Daemon
+from operating_platform.robots.daemon import Daemon
 
 from operating_platform.dataset.dorobot_dataset import DoRobotDataset
-from operating_platform.robot.robots.utils import (
+from operating_platform.robots.utils import (
     Robot,
     RobotConfig,
     make_robot_from_config,
