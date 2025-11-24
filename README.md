@@ -1,6 +1,6 @@
-# WanX-EI-Studio
+# RoboDriver
 
-Docs coming soon.
+Docs: https://baai-ei-data.github.io/RoboDriver-Doc/
 
 ## Support Robot
 
@@ -31,13 +31,13 @@ ruantong_v1, Not Support
 creat conda env
 
 ```sh
-conda create --name wanx-studio python==3.11
+conda create --name robo_driver python==3.10
 ```
 
 activate conda env
 
 ```sh
-conda activate wanx-studio
+conda activate robo_driver
 ```
 
 install this project
@@ -68,3 +68,38 @@ pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https
 - Validate SO101 in new Code
 - Function: Compare server code version
 - Save device info
+
+```
+    "flask-cors>=5.0.0,<7.0.0",
+
+    "pynput>=1.8.1,<2.0.0",
+    "python-socketio>=5.13.0,<6.0.0",
+    "websocket-client>=1.8.0,<2.0.0",
+    "schedule>=1.2.2,<2.0.0",
+    "pillow>=10.4.0,<12.0.0",
+
+    "jsonlines>=4.0.0,<5.0.0",
+
+    "gymnasium>=1.1.1,<2.0.0",
+    "einops>=0.8.1,<0.9.0",
+
+    "diffusers>=0.33.1,<0.34.0",
+    "pymunk>=6.11.1,<8.0.0",
+
+    "deepdiff>=8.4.2,<9.0.0",
+    "zarr>=2.16.1,<4.0.0",
+    "numba>=0.58.1,<0.62.0",
+
+    "flask==3.0.3",
+    "flask-socketio>=5.5.1,<6.0.0",
+    "matplotlib>=3.7.5",
+
+    "seaborn",
+    "rerun-sdk (==0.22.0)",
+    "robotic-arm (>=1.0.6,<2.0.0)",
+    "websockets",
+
+    "colorama",
+    "scipy",
+    "logging_mp"
+```

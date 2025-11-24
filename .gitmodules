@@ -1,0 +1,3 @@
+[submodule "operating_platform/robot/robots/so101_follower_dora"]
+	path = operating_platform/robot/robots/so101_follower_dora
+	url = https://github.com/BAAI-EI-DATA/robodriver-robot-so101-follower-dora.git

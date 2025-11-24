@@ -1,1 +1,0 @@
-docker build -f operating_platform/robot/robots/so101_v1/docker/Dockerfile.so101_v1 -t dr-image-so101-v1:V0.1 .
