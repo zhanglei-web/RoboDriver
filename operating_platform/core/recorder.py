@@ -4,6 +4,7 @@ import logging_mp
 
 from deepdiff import DeepDiff
 from dataclasses import dataclass
+from typing import Optional
 
 from operating_platform.robots.configs import RobotConfig
 from operating_platform.robots.utils import  busy_wait, safe_disconnect, make_robot_from_config
@@ -97,7 +98,15 @@ class RecordConfig():
 
 
 class Record:
-    def __init__(self, fps: int, robot: Robot, teleop: Teleoperator, daemon: Daemon, record_cfg: RecordConfig, record_cmd: dict):
+    def __init__(
+        self,
+        fps: int,
+        robot: Robot,
+        teleop: Optional[Teleoperator],
+        daemon: Daemon,
+        record_cfg: RecordConfig,
+        record_cmd: dict
+    ):
         self.robot = robot
         self.daemon = daemon
         self.record_cfg = record_cfg
@@ -113,10 +122,12 @@ class Record:
 
         teleop_action_processor, robot_action_processor, robot_observation_processor = make_default_processors()
 
+        action_features = teleop.action_features if teleop is not None else robot.action_features
+
         dataset_features = combine_feature_dicts(
             aggregate_pipeline_dataset_features(
                 pipeline=teleop_action_processor,
-                initial_features=create_initial_features(action=teleop.action_features),
+                initial_features=create_initial_features(action=action_features),
                 use_videos=record_cfg.video,
             ),
             aggregate_pipeline_dataset_features(
@@ -125,7 +136,7 @@ class Record:
                 use_videos=record_cfg.video,
             ),
         )
-
+                
         logger.info(f"Dataset features: {dataset_features}")
 
         if self.record_cfg.resume:

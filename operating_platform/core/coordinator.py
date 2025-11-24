@@ -7,7 +7,7 @@ import socketio
 import logging_mp
 
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from operating_platform.dataset.dorobot_dataset import *
 from operating_platform.dataset.visual.visual_dataset import visualize_dataset
@@ -26,7 +26,12 @@ logger = logging_mp.get_logger(__name__)
 
 
 class Coordinator:
-    def __init__(self, daemon: Daemon, teleop: Teleoperator,server_url="http://localhost:8088"):
+    def __init__(
+        self,
+        daemon: Daemon,
+        teleop: Optional[Teleoperator],
+        server_url="http://localhost:8088",
+    ):
         self.server_url = server_url
         # 异步客户端
         self.sio = socketio.AsyncClient()
