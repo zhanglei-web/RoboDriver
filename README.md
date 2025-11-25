@@ -1,105 +1,70 @@
+![RoboDriver](assets/images/robodriver.png)
+
+[![GitHub Issues](https://img.shields.io/github/issues/FlagOpen/RoboDriver)](https://github.com/FlagOpen/RoboDriver/issues)
+[![GitHub Discussions](https://img.shields.io/github/discussions/FlagOpen/RoboDriver)](https://github.com/FlagOpen/RoboDriver/discussions)
+
+[![README in English](https://img.shields.io/badge/English-d9d9d9)](./README.md)
+[![Simplified Chinese README](https://img.shields.io/badge/Simplified_Chinese-d9d9d9)](./README_zh.md)
+[![Japanese README](https://img.shields.io/badge/Japanese-d9d9d9)](./README_ja.md)
+
+Project Documentation: [RoboDriver-Doc](https://flagopen.github.io/RoboDriver-Doc)
+
 # RoboDriver
 
-Docs: https://baai-ei-data.github.io/RoboDriver-Doc/
+## Latest News
 
-## Support Robot
+- [2025-11-20] Project documentation created
 
-P1:
-```
-aloha_v1, operating_platform <= 0.1.5
-SO101_v1, operating_platform <= 0.1.5
-galaxea_v1, operating_platform <= 0.1.5
-realman_v1, operating_platform <= 0.1.5
-dexterous_hand_v1, operating_platform <= 0.1.5
-```
+## Table of Contents
 
-P2:
-```
-pika_v1, operating_platform <= 0.1.3
-galbot_g1, operating_platform <= 0.1.3
-leju_kuavo4p, operating_platform <= 0.1.3
-agibot_a2d, operating_platform <= 0.1.3
-```
+1. [Overview](#overview)
+2. [Key Features](#key-features)
+3. [Quick Start](#quick-start)
+4. [Contributing](#contributing)
+5. [Support](#support)
+6. [License and Acknowledgements](#license-and-acknowledgements)
+7. [Citation](#citation)
 
-P3:
-```
-adora_v1, Not Support
-ruantong_v1, Not Support
-```
+## Key Features
 
-## Start
-creat conda env
+- **Multiple Robot Integration Methods**: RoboDriver supports integration beyond SDKs, including ROS and Dora.
+- **LeRobot Compatibility**: RoboDriver directly uses LeRobot's `Robot` class for its robot interface, which means it...
+- **Enhanced LeRobot Dataset Format**: Different data structures are used at different stages of data handling. Data is stored as individual entries at the collection end for easier editing and transmission. The format also extends the original LeRobot specification.
 
-```sh
-conda create --name robo_driver python==3.10
-```
+## Quick Start
 
-activate conda env
+Please refer to the project documentation: [RoboDriver-Doc](https://flagopen.github.io/RoboDriver-Doc)
 
-```sh
-conda activate robo_driver
-```
+## Contributing
 
-install this project
+We sincerely welcome *any form of contribution* from the community. Whether it's **pull requests for new features**, **bug reports**, or even **small suggestions** to make RoboDriver more user-friendly—we deeply appreciate all contributions!
 
-```sh
-pip install -e .
-```
+## Support
 
-**install pytorch, according to your platform**
+- Please use GitHub [Issues](https://github.com/FlagOpen/RoboDriver/issues) to report bugs and request new features.
+- Please use GitHub [Discussions](https://github.com/FlagOpen/RoboDriver/discussions) to share ideas and ask questions.
 
-```sh
-# ROCM 6.1 (Linux only)
-pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/rocm6.1
-# ROCM 6.2.4 (Linux only)
-pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/rocm6.2.4
-# CUDA 11.8
-pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu118
-# CUDA 12.4
-pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
-# CUDA 12.6
-pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu126
-# CPU only
-pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+## License and Acknowledgements
+
+RoboDriver's source code is licensed under the Apache 2.0 License. This project would not be possible without the following amazing open-source projects:
+
+- Thanks to the LeRobot team for open-sourcing 🤗 [LeRobot](https://github.com/huggingface/lerobot). RoboDriver is built as an improvement upon LeRobot.
+- Thanks to TheRobotStudio team for open-sourcing the SO-100 and SO-101 robot arms 🤗 [SO-101](https://github.com/TheRobotStudio/SO-ARM100). The SO-101 arm is used as a deployment example in this project.
+- Thanks to the dora-rs team for open-sourcing their robotics framework 🤗 [dora](https://github.com/dora-rs/dora). This framework enables a novel integration method for robots in this project.
+
+## Citation
+
+```bibtex
+@misc{RoboDriver,
+  author = {RoboDriver Authors},
+  title = {RoboDriver: A robot control and data acquisition framework},
+  month = {November},
+  year = {2025},
+  url = {https://github.com/FlagOpen/RoboDriver}
+}
 ```
 
 ## TODO
 
-- Validate SO101 in new Code
 - Function: Compare server code version
 - Save device info
-
-```
-    "flask-cors>=5.0.0,<7.0.0",
-
-    "pynput>=1.8.1,<2.0.0",
-    "python-socketio>=5.13.0,<6.0.0",
-    "websocket-client>=1.8.0,<2.0.0",
-    "schedule>=1.2.2,<2.0.0",
-    "pillow>=10.4.0,<12.0.0",
-
-    "jsonlines>=4.0.0,<5.0.0",
-
-    "gymnasium>=1.1.1,<2.0.0",
-    "einops>=0.8.1,<0.9.0",
-
-    "diffusers>=0.33.1,<0.34.0",
-    "pymunk>=6.11.1,<8.0.0",
-
-    "deepdiff>=8.4.2,<9.0.0",
-    "zarr>=2.16.1,<4.0.0",
-    "numba>=0.58.1,<0.62.0",
-
-    "flask==3.0.3",
-    "flask-socketio>=5.5.1,<6.0.0",
-    "matplotlib>=3.7.5",
-
-    "seaborn",
-    "rerun-sdk (==0.22.0)",
-    "robotic-arm (>=1.0.6,<2.0.0)",
-    "websockets",
-
-    "colorama",
-    "scipy",
-    "logging_mp"
-```
