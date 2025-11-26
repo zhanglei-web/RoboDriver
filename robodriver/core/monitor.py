@@ -23,6 +23,7 @@ class Monitor:
     def send_machine_info_periodically(self, interval_seconds=60):
         """定时发送设备信息（线程安全）"""
         while self._running:
+            time.sleep(interval_seconds)
             try:
                 with self._lock:
                     if self.daemon.robot.status is None:
@@ -41,8 +42,6 @@ class Monitor:
 
             except requests.exceptions.RequestException as e:
                 print(f"[{time.ctime()}] 请求异常: {str(e)}")
-
-            time.sleep(interval_seconds)
 
     def start(self):
         """启动后台线程"""

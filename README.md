@@ -5,7 +5,6 @@
 
 [![README in English](https://img.shields.io/badge/English-d9d9d9)](./README.md)
 [![Simplified Chinese README](https://img.shields.io/badge/简体中文-d9d9d9)](./README_zh.md)
-[![Japanese README](https://img.shields.io/badge/日本語-d9d9d9)](./README_ja.md)
 
 Project Documentation: [RoboDriver-Doc](https://flagopen.github.io/RoboDriver-Doc)
 
