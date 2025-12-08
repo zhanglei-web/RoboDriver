@@ -210,3 +210,5 @@ docker/*.tar*
 .pids
 .vscode
 *.build
+
+**out/
