@@ -1,0 +1,34 @@
+nodes:
+  - id: dora_sim_genesis_franka_grasp_cube
+    path: ../src/main.py
+    inputs:
+      tick: dora/timer/millis/30 
+    outputs:
+      - image
+      - wrist_image
+      - joint_position
+    env:
+      CONFIG_PATH: ../config/simulation_config.yaml
+
+  - id: rerun
+    path: dora-rerun
+    inputs:
+      image: 
+        source: dora_sim_genesis_franka_grasp_cube/image
+        queue_size: 1
+      wrist_image: 
+        source: dora_sim_genesis_franka_grasp_cube/wrist_image
+        queue_size: 1
+
+  # - id: plot
+  #   path: opencv-plot
+  #   inputs:
+  #     image:
+  #       source: dora_sim_genesis_franka_grasp_cube/image
+  #       queue_size: 1
+
+  # - id: print_joint
+  #   path: ../src/print_joint.py
+  #   inputs:
+  #     joint: dora_sim_genesis_franka_grasp_cube/joint_position
+
