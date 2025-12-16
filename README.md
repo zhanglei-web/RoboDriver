@@ -62,20 +62,20 @@ RoboDriver 已完成多款主流机器人的适配，按接入方式示例如下
 ### 🔌 ROS1 接入
 | 机器人型号 | 简介 | 代码链接 | 贡献人（联系方式） |
 |------------|------|--------------|------------------------|
-| Realman 机械臂 | 基于Realman，6DOF+力控模块，3*RealSense相机 | [robodriver/robots/robodriver-robot-realman-aio-ros1](./robodriver/robots/robodriver-robot-realman-aio-ros1) | zhang lei ([https://github.com/zhanglei-web](https://github.com/zhanglei-web)) |
+| Realman 机械臂 | 基于Realman，6DOF+力控模块，3*RealSense相机 | [robodriver/robots/robodriver-robot-realman-aio-ros1](./robodriver/robots/robodriver-robot-realman-aio-ros1) | [![zhanglei-web](https://avatars.githubusercontent.com/zhanglei-web?s=50)](https://github.com/zhanglei-web) |
 
 ### 🔌 ROS2 接入
 | 机器人型号 | 简介 | 代码链接 | 贡献人（联系方式） |
 |--------------|--------------------------------------------------------------|------------------------------------------------------------------------------------------|------------------------|
-| GALAXEALITE | 基于Galaxealite，双臂6DOF+末端夹爪，4*RealSense相机 | [robodriver/robots/robodriver-robot-galaxealite-aio-ros2](./robodriver/robots/robodriver-robot-galaxealite-aio-ros2) | liu you（[https://github.com/liuyou1103](https://github.com/liuyou1103)） |
-| SO101 机械臂 | 开源轻量级机械臂，6DOF+末端夹爪，1*RealSense相机，1*RGB相机模块 | [robodriver/robots/robodriver-robot-so101-aio-ros2](./robodriver/robots/robodriver-robot-so101-aio-ros2) | yang xiang（[https://github.com/Ryu-Yang](https://github.com/Ryu-Yang)） |
+| GALAXEALITE | 基于Galaxealite，双臂6DOF+末端夹爪，4*RealSense相机 | [robodriver/robots/robodriver-robot-galaxealite-aio-ros2](./robodriver/robots/robodriver-robot-galaxealite-aio-ros2) | [![liuyou1103](https://avatars.githubusercontent.com/liuyou1103?s=50)](https://github.com/liuyou1103) |
+| SO101 机械臂 | 开源轻量级机械臂，6DOF+末端夹爪，1*RealSense相机，1*RGB相机模块 | [robodriver/robots/robodriver-robot-so101-aio-ros2](./robodriver/robots/robodriver-robot-so101-aio-ros2) | [![Ryu-Yang](https://avatars.githubusercontent.com/Ryu-Yang?s=50)](https://github.com/Ryu-Yang) |
 
 ### 🔌 Dora（SDK）接入
 | 机器人型号 | 简介 | 代码链接 | 贡献人（联系方式） |
 |--------------|--------------------------------------------------------------|------------------------------------------------------------------------------------------|------------------------|
-| Realman 机械臂 | 基于Realman，6DOF+力控模块，3*RealSense相机 | [robodriver/robots/robodriver-robot-realman1-aio-dora](./robodriver/robots/robodriver-robot-realman1-aio-dora) | xu runtian（[https://github.com/XuRuntian](https://github.com/XuRuntian)） |
-| SO101 机械臂 | 开源轻量级机械臂，6DOF+末端夹爪，1*RealSense相机，1*RGB相机模块 | [robodriver/robots/robodriver-robot-so101-aio-dora](./robodriver/robots/robodriver-robot-so101-aio-dora) | yang xiang（[https://github.com/Ryu-Yang](https://github.com/Ryu-Yang)） |
-| Franka | 工业级机械臂，6DOF+末端夹爪，1*RealSense相机 | [robodriver/robots/robodriver-robot-franka-aio-dora](./robodriver/robots/robodriver-robot-franka-aio-dora) | xu runtian（[https://github.com/XuRuntian](https://github.com/XuRuntian)） |
+| Realman 机械臂 | 基于Realman，6DOF+力控模块，3*RealSense相机 | [robodriver/robots/robodriver-robot-realman1-aio-dora](./robodriver/robots/robodriver-robot-realman1-aio-dora) | [![XuRuntian](https://avatars.githubusercontent.com/XuRuntian?s=50)](https://github.com/XuRuntian) |
+| SO101 机械臂 | 开源轻量级机械臂，6DOF+末端夹爪，1*RealSense相机，1*RGB相机模块 | [robodriver/robots/robodriver-robot-so101-aio-dora](./robodriver/robots/robodriver-robot-so101-aio-dora) | [![Ryu-Yang](https://avatars.githubusercontent.com/Ryu-Yang?s=50)](https://github.com/Ryu-Yang) |
+| Franka | 工业级机械臂，6DOF+末端夹爪，1*RealSense相机 | [robodriver/robots/robodriver-robot-franka-aio-dora](./robodriver/robots/robodriver-robot-franka-aio-dora) | [![XuRuntian](https://avatars.githubusercontent.com/XuRuntian?s=50)](https://github.com/XuRuntian) |
 
 > ✨ 说明：
 > 1. 接入方式命名规范：`robodriver-robot-[机器人型号]-[遥操方式]-[接入类型]`（如 `aio`/`follwer`/`teleoperate`, `ros2`/`dora`）；
