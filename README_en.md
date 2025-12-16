@@ -54,7 +54,7 @@ RoboDriver has completed adaptation for the `Genesis` simulation environment. Ad
 
 ### 🪞 Genesis
 
-| Robot Model | Description | Repository Link | Repository Contributor (Contact) |
+| Robot Model | Description | Repository Link | Contributor |
 |------------|------|--------------|------------------------|
 | Franka Robot Arm | A Franka robot arm grasping a block | [robodriver/simulations/robodriver-sim-genesis-franka-aio-dora](./robodriver/simulations/robodriver-sim-genesis-franka-aio-dora) | [![Ryu-Yang](https://avatars.githubusercontent.com/Ryu-Yang?s=50)](https://github.com/Ryu-Yang) |
 
@@ -62,18 +62,18 @@ RoboDriver has completed adaptation for the `Genesis` simulation environment. Ad
 RoboDriver has completed adaptation for multiple mainstream robots. Examples by integration method are as follows (each repository contains complete guidelines for the corresponding robot's integration steps, environment configuration, command adaptation, etc.):
 
 ### 🔌 ROS1 Integration
-| Robot Model | Description | Code Link | Contributor (Contact) |
+| Robot Model | Description | Code Link | Contributor |
 |------------|------|--------------|------------------------|
-| Realman Robot Arm | Based on Realman, 6DOF+force control module, 3*RealSense cameras | [robodriver/robots/robodriver-robot-realman-aio-ros1](./robodriver/robots/robodriver-robot-realman-aio-ros1) | [![zhanglei-web](https://avatars.githubusercontent.com/zhanglei-web?s=50)](https://github.com/zhanglei-web) |
+| Realman Robot Arm | Based on Realman, 6DOF+force control module, 3*RealSense cameras | [robodriver/robots/robodriver-robot-realman-aio-ros1](./robodriver/robots/robodriver-robot-realman-aio-ros1) | [<img src="https://avatars.githubusercontent.com/zhanglei-web" width="50" height="50">](https://github.com/zhanglei-web) |
 
 ### 🔌 ROS2 Integration
-| Robot Model | Description | Code Link | Contributor (Contact) |
+| Robot Model | Description | Code Link | Contributor |
 |--------------|--------------------------------------------------------------|------------------------------------------------------------------------------------------|------------------------|
 | GALAXEALITE | Based on Galaxealite, dual-arm 6DOF+end gripper, 4*RealSense cameras | [robodriver/robots/robodriver-robot-galaxealite-aio-ros2](./robodriver/robots/robodriver-robot-galaxealite-aio-ros2) | [![liuyou1103](https://avatars.githubusercontent.com/liuyou1103?s=50)](https://github.com/liuyou1103) |
 | SO101 Robot Arm | Open-source lightweight robot arm, 6DOF+end gripper, 1*RealSense camera, 1*RGB camera module | [robodriver/robots/robodriver-robot-so101-aio-ros2](./robodriver/robots/robodriver-robot-so101-aio-ros2) | [![Ryu-Yang](https://avatars.githubusercontent.com/Ryu-Yang?s=50)](https://github.com/Ryu-Yang) |
 
 ### 🔌 Dora (SDK) Integration
-| Robot Model | Description | Code Link | Contributor (Contact) |
+| Robot Model | Description | Code Link | Contributor |
 |--------------|--------------------------------------------------------------|------------------------------------------------------------------------------------------|------------------------|
 | Realman Robot Arm | Based on Realman, 6DOF+force control module, 3*RealSense cameras | [robodriver/robots/robodriver-robot-realman1-aio-dora](./robodriver/robots/robodriver-robot-realman1-aio-dora) | [![XuRuntian](https://avatars.githubusercontent.com/XuRuntian?s=50)](https://github.com/XuRuntian) |
 | SO101 Robot Arm | Open-source lightweight robot arm, 6DOF+end gripper, 1*RealSense camera, 1*RGB camera module | [robodriver/robots/robodriver-robot-so101-aio-dora](./robodriver/robots/robodriver-robot-so101-aio-dora) | [![Ryu-Yang](https://avatars.githubusercontent.com/Ryu-Yang?s=50)](https://github.com/Ryu-Yang) |
