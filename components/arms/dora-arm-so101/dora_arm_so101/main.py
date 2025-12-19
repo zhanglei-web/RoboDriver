@@ -7,8 +7,8 @@ import draccus
 from dora import Node
 from pathlib import Path
 
-from motors.feetech import FeetechMotorsBus, OperatingMode
-from motors import Motor, MotorCalibration, MotorNormMode
+from .motors.feetech import FeetechMotorsBus, OperatingMode
+from .motors import Motor, MotorCalibration, MotorNormMode
 
 
 GET_DEVICE_FROM = os.getenv("GET_DEVICE_FROM", "PORT")  # SN or INDEX

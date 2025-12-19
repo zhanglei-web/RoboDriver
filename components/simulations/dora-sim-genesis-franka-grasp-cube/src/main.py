@@ -5,8 +5,8 @@ import os
 import numpy as np
 import genesis as gs
 import math
-from keyboard_controller import KeyboardController
-from config_loader import get_config_loader
+from .keyboard_controller import KeyboardController
+from .config_loader import get_config_loader
 from dora import Node
 import cv2
 import pyarrow as pa

@@ -2,7 +2,7 @@ import numpy as np
 from pynput import keyboard
 import math
 from typing import Set, Any
-from config_loader import get_config_loader
+from .config_loader import get_config_loader
 
 
 class KeyboardController:

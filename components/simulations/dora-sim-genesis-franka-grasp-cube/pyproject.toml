@@ -27,3 +27,6 @@ view = [
     "dora-rs-cli",
     "dora-rerun",
 ]
+
+[project.scripts]
+dora-sim-genesis-franka-grasp-cube = "src.main:main"

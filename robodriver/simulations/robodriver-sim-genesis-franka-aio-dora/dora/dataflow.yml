@@ -1,6 +1,7 @@
 nodes:
   - id: dora-sim-genesis-franka-grasp-cube
-    path: nodes/dora-sim-genesis-franka-grasp-cube/src/main.py
+    build: pip install dora-sim-genesis-franka-grasp-cube
+    path: dora-sim-genesis-franka-grasp-cube
     inputs:
       tick: dora/timer/millis/30
       action_joint: robodriver-sim/action_joint
@@ -9,7 +10,7 @@ nodes:
       - wrist_image
       - joint_position
     env:
-      CONFIG_PATH: nodes/dora-sim-genesis-franka-grasp-cube/config/simulation_config.yaml
+      CONFIG_PATH: ./config/simulation_config.yaml
 
   - id: robodriver-sim
     path: dynamic
