@@ -501,10 +501,12 @@ wheels = [
 
 [[package]]
 name = "dora-sim-genesis-franka-grasp-cube"
-version = "0.0.2"
+version = "0.0.3"
 source = { editable = "." }
 dependencies = [
-    { name = "dora-rs" },
+    { name = "dora-rerun", version = "0.3.11", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "dora-rerun", version = "0.3.13", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "dora-rs-cli" },
     { name = "genesis-world" },
     { name = "pynput" },
     { name = "torch" },
@@ -519,8 +521,9 @@ view = [
 
 [package.metadata]
 requires-dist = [
+    { name = "dora-rerun" },
     { name = "dora-rerun", marker = "extra == 'view'" },
-    { name = "dora-rs", specifier = ">=0.3.11,<0.4.0" },
+    { name = "dora-rs-cli", specifier = ">=0.3.11,<0.4.0" },
     { name = "dora-rs-cli", marker = "extra == 'view'" },
     { name = "genesis-world", specifier = ">=0.3.7" },
     { name = "pynput" },
