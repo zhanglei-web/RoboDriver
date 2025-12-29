@@ -79,7 +79,7 @@ async def async_main(cfg: ControlPipelineConfig):
                 daemon.set_obs_action(action)
 
             if sim is not None:
-                observation_sim = sim.update(action)
+                observation_sim = sim.update(action, prefix="leader_", suffix=".pos")
 
             tasks = []
             if observation is not None:
