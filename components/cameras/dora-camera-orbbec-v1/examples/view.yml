@@ -16,5 +16,3 @@ nodes:
       image: 
         source: camera/image
         queue_size: 1
-    env:
-      RERUN_MEMORY_LIMIT: 25%
