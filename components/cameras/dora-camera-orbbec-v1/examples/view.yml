@@ -1,0 +1,20 @@
+nodes:
+  - id: camera
+    path: ../dora_camera_orbbec_v1/main.py
+    inputs:
+      tick: dora/timer/millis/33
+    outputs:
+      - image
+      - image_depth
+    env:
+      GET_DEVICE_FROM: INDEX
+      DEVICE_INDEX: 0
+
+  - id: plot
+    path: opencv-plot
+    inputs:
+      image: 
+        source: camera/image
+        queue_size: 1
+    env:
+      RERUN_MEMORY_LIMIT: 25%
