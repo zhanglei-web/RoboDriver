@@ -31,14 +31,14 @@ class SimulatorConfig():
     unit: str = "deg"
     show_viewer: bool = False
 
-    def __post_init__(self):
-        if self.arm_config is not None:
-            for _, config in self.arm_config.items():
-                for attr in ["path", "type", "unit", "pos"]:
-                    if getattr(config, attr) is None:
-                        raise ValueError(
-                            f"Specifying '{attr}' is required for the arm to be used in sim"
-                        )
+    # def __post_init__(self):
+    #     if self.arm_config is not None:
+    #         for _, config in self.arm_config.items():
+    #             for attr in ["path", "type", "unit", "pos"]:
+    #                 if getattr(config, attr) is None:
+    #                     raise ValueError(
+    #                         f"Specifying '{attr}' is required for the arm to be used in sim"
+    #                     )
     
 
 class Simulator:
