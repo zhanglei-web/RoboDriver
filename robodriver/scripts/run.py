@@ -114,6 +114,8 @@ async def async_main(cfg: ControlPipelineConfig):
         logger.info("coordinator and daemon stop")
     finally:
         daemon.stop()
+        if sim is not None:
+            sim.stop()
         await coordinator.stop()
 
 
