@@ -1,4 +1,4 @@
-<mujoco model="piper_description">
+<mujoco model="agilex_piper_description">
   <compiler angle="radian" meshdir="assets"/>
 
   <option integrator="implicitfast" cone="elliptic" impratio="10"/>

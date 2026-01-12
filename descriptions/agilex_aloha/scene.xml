@@ -1,6 +1,5 @@
 <mujoco model="agilex_aloha_scene">
-  <include file="piper_right.xml"/>
-  <include file="piper_left.xml"/>
+  <include file="aloha.xml"/>
 
   <statistic center="0 0 0.1" extent="0.4"/>
 

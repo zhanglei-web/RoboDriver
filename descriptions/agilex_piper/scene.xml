@@ -1,4 +1,4 @@
-<mujoco model="piper_scene">
+<mujoco model="agilex_piper_scene">
   <include file="piper.xml"/>
 
   <statistic center="0 0 0.1" extent="0.4"/>
