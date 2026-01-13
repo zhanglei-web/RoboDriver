@@ -2,6 +2,7 @@ import mujoco
 import mujoco.viewer
 import logging_mp
 import numpy as np
+import time
 
 from typing import Any
 from dataclasses import dataclass
@@ -38,8 +39,13 @@ class Simulator:
 
         self.model.opt.timestep = config.timestep
         mujoco.mjv_defaultCamera(self.cam)
+        
+        # Time tracking for simulation synchronization
+        self._last_update_time = None
+        self._max_steps_per_update = 10  # Limit steps to prevent freezing
 
     def update(self, action: dict[str, Any], prefix: str, suffix: str):
+        # Apply action to actuators
         actuators_idx = [self.model.actuator(name.removeprefix(f"{prefix}").removesuffix(f"{suffix}")).id for name in action]
         
         goal_joint = list(action.values())
@@ -60,8 +66,37 @@ class Simulator:
             if dof_id >= 0:
                 self.data.ctrl[dof_id] = joint_value
 
-        mujoco.mj_step(self.model, self.data)
+        # Time synchronization: execute multiple physics steps based on elapsed time
+        current_time = time.perf_counter()
+        
+        if self._last_update_time is None:
+            # First update, just do one step
+            steps_to_do = 1
+            self._last_update_time = current_time
+        else:
+            # Calculate elapsed time since last update
+            elapsed_time = current_time - self._last_update_time
+            self._last_update_time = current_time
+            
+            # Calculate how many physics steps we should have done
+            steps_to_do = int(elapsed_time / self.config.timestep)
+            
+            # Limit steps to prevent freezing if too much time has passed
+            if steps_to_do > self._max_steps_per_update:
+                logger.warning(
+                    f"Too many steps ({steps_to_do}) needed, limiting to {self._max_steps_per_update}. "
+                    f"Elapsed time: {elapsed_time:.3f}s, timestep: {self.config.timestep:.3f}s"
+                )
+                steps_to_do = self._max_steps_per_update
+            elif steps_to_do < 1:
+                # Not enough time has passed for even one step
+                steps_to_do = 1
 
+        # Execute physics steps
+        for _ in range(steps_to_do):
+            mujoco.mj_step(self.model, self.data)
+
+        # Sync viewer and render
         if self.viewer is not None:
             self.viewer.sync()
             
