@@ -20,4 +20,7 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["robodriver_robot_a2d_aio_ros2"]
+include = [
+    "robodriver_robot_a2d_aio_ros2",
+    "lerobot_robot_a2d_aio_ros2"
+]

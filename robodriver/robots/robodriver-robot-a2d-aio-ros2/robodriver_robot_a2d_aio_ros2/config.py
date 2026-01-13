@@ -11,14 +11,14 @@ from lerobot.motors import Motor, MotorNormMode
 @dataclass
 class A2DAioRos2RobotConfig(RobotConfig):
     use_degrees: bool = False
-
-    # G1 关节通常是 -3.14 到 3.14 (弧度)，使用默认 RAW 模式或根据标定调整
-    norm_mode_body = MotorNormMode.raw
+    norm_mode_body = (
+        MotorNormMode.DEGREES if use_degrees else MotorNormMode.RANGE_M100_100
+    )
 
     # 定义 Follower (G1 机器人本体) 的电机列表
     # 对应文档的 14 个手臂关节
     follower_motors: Dict[str, Dict[str, Motor]] = field(
-        default_factory=lambda: {
+        default_factory=lambda norm_mode_body=norm_mode_body: {
             # 左臂 7 轴
             "left_arm_joint1": Motor(1, "g1_arm", norm_mode_body),
             "left_arm_joint2": Motor(2, "g1_arm", norm_mode_body),
@@ -37,9 +37,9 @@ class A2DAioRos2RobotConfig(RobotConfig):
             "right_arm_joint7": Motor(14, "g1_arm", norm_mode_body),
 
             # --- 末端执行器 (夹爪或灵巧手) ---
-            # 0=松开, 1=夹紧 (夹爪模式) [cite: 231]
-            "left_gripper": Motor(15, "g1_gripper", MotorNormMode.RANGE_0_100),
-            "right_gripper": Motor(16, "g1_gripper", MotorNormMode.RANGE_0_100),
+            # 0=松开, 1=夹紧 (夹爪模式)
+            "left_gripper_joint1": Motor(15, "g1_gripper", norm_mode_body),
+            "right_gripper_joint1": Motor(16, "g1_gripper", norm_mode_body),
         }
     )
 
@@ -50,9 +50,9 @@ class A2DAioRos2RobotConfig(RobotConfig):
 
     cameras: Dict[str, CameraConfig] = field(
         default_factory=lambda: {
-            "head_color": OpenCVCameraConfig("/camera/head_color", fps=30, width=1280, height=720),
-            "hand_left_color":  OpenCVCameraConfig("/camera/hand_left_color",  fps=30, width=848, height=480),
-            "hand_right_color": OpenCVCameraConfig("/camera/hand_right_color", fps=30, width=848, height=480),
+            "head_color_image": OpenCVCameraConfig(1, fps=30, width=1280, height=720),
+            "hand_left_color_image":  OpenCVCameraConfig(2,  fps=30, width=848, height=480),
+            "hand_right_color_image": OpenCVCameraConfig(3, fps=30, width=848, height=480),
         }
     )
 

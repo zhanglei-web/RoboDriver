@@ -7,7 +7,7 @@ from genie_msgs.msg import (
     WaistState,
     BatteryStatus,
     Position,
-    ArmState  # <-- 注意：这里用 ArmState，不是 EndState
+    EndState  # <-- 注意：这里用 EndState
 )
 
 class A2DRobotDebugger(Node):
@@ -21,8 +21,8 @@ class A2DRobotDebugger(Node):
         self.create_subscription(BatteryStatus, '/hal/batt_state', self.batt_cb, 10)
         self.create_subscription(Position, '/hal/position', self.pos_cb, 10)
         # 注意：左右末端实际是 ArmState 类型！
-        self.create_subscription(ArmState, '/hal/left_ee_data', self.left_ee_cb, 10)
-        self.create_subscription(ArmState, '/hal/right_ee_data', self.right_ee_cb, 10)
+        self.create_subscription(EndState, '/hal/left_ee_data', self.left_ee_cb, 10)
+        self.create_subscription(EndState, '/hal/right_ee_data', self.right_ee_cb, 10)
 
         self.get_logger().info("A2D Robot Debugger Started. Listening to key topics...")
 
@@ -54,11 +54,11 @@ class A2DRobotDebugger(Node):
 
     def left_ee_cb(self, msg):
         # 从 motor_states 提取 position
-        positions = [round(m.position, 3) for m in msg.motor_states]
+        positions = [round(m.position, 3) for m in msg.end_state]
         self.get_logger().info(f"[Left EE] Motors: {positions}")
 
     def right_ee_cb(self, msg):
-        positions = [round(m.position, 3) for m in msg.motor_states]
+        positions = [round(m.position, 3) for m in msg.end_state]
         self.get_logger().info(f"[Right EE] Motors: {positions}")
 
 def main(args=None):
