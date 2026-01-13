@@ -33,7 +33,7 @@ class Simulator:
         self.model = mujoco.MjModel.from_xml_path(self.config.xml_path)
         self.data = mujoco.MjData(self.model)
         self.cam = mujoco.MjvCamera()
-        self.renderer = mujoco.Renderer(self.model, height=self.config.height, width=self.config.width)
+        self.renderer = mujoco.Renderer(self.model, height=self.config.render_height, width=self.config.render_width)
         self.viewer = mujoco.viewer.launch_passive(self.model, self.data) if self.config.show_viewer == True else None
 
         self.model.opt.timestep = config.timestep
