@@ -47,4 +47,4 @@ while viewer.is_running():
 # 自动清理 renderer（因为用了 with，但这里没用 with，所以手动 close）
 renderer.close()
 viewer.close()
-cv2.destroyAllWindows()
+# cv2.destroyAllWindows()
