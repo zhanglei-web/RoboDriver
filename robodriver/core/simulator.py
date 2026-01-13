@@ -27,8 +27,8 @@ class SimulatorConfig():
     # urdf_path: str | None = None
     # mjcf_path: str | None = None
     xml_path: str | None = None
-    backend: str = "cpu"
-    unit: str = "deg"
+    # backend: str = "cpu"
+    from_unit: str = "deg"
     show_viewer: bool = False
 
     # def __post_init__(self):
@@ -49,11 +49,13 @@ class Simulator:
         # arm_config: dict[str, SimulatorArmConfig] | None,
         # urdf_path: dict[str, str] | str | None,
         # mjcf_path: dict[str, str] | str | None
-        xml_path: str | None
+        xml_path: str | None,
+        from_unit: str,
     ):
         self.arm = None
         self.arms = None
         self.units: dict[str, str] | None = None
+        self.from_unit = from_unit
 
         # backend_mapping = {
         #     "cpu": gs.cpu,
@@ -164,15 +166,19 @@ class Simulator:
             goal_joint_numpy = np.array(goal_joint, dtype=np.float32)
             print("goal_joint_numpy:", goal_joint_numpy)
 
+            if self.from_unit == "deg":
+                # 假设 goal_joint 是角度值，需要转换为弧度
+                goal_joint_degrees = np.array(goal_joint, dtype=np.float32)  # 角度值
+                print("原始角度值 (deg):", goal_joint_degrees)
 
-            # 假设 goal_joint 是角度值，需要转换为弧度
-            goal_joint_degrees = np.array(goal_joint, dtype=np.float32)  # 角度值
-            print("原始角度值 (deg):", goal_joint_degrees)
-
-            # if 需要从角度转化弧度
-            # 转换为弧度
-            goal_joint_radians = goal_joint_degrees * (np.pi / 180.0)
-            print("转换为弧度 (rad):", goal_joint_radians)
+                # TODO (Xiang Yang): rad deg switch
+                # if 需要从角度转化弧度
+                # 转换为弧度
+                goal_joint_radians = goal_joint_degrees * (np.pi / 180.0)
+                print("转换为弧度 (rad):", goal_joint_radians)
+            elif self.from_unit == "rad":
+                goal_joint_radians = np.array(goal_joint, dtype=np.float32)  # 角度值
+                print("原始弧度值 (rad):", goal_joint_radians)
 
             for j, dof_id in enumerate(actuators_idx):
                 if dof_id >= 0 and j < len(goal_joint_radians):
