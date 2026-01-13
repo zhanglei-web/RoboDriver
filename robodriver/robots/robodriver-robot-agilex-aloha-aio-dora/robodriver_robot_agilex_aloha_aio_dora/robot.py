@@ -322,14 +322,14 @@ class AgilexAlohaAIODoraRobot(Robot):
 
         for _i, motor in enumerate(self.follower_motors):  # follower从臂是被控制的
             if "joint" in motor and "right" in motor:
-                right_arm_action.append(action["leader_{motor}.pos"]) # 控制信号来源是leader
+                right_arm_action.append(action[f"leader_{motor}.pos"]) # 控制信号来源是leader
             if "gripper" in motor and "right" in motor:
-                right_arm_action.append(action["leader_{motor}.pos"])
+                right_arm_action.append(action[f"leader_{motor}.pos"])
 
             if "joint" in motor and "left" in motor:
-                left_arm_action.append(action["leader_{motor}.pos"])
+                left_arm_action.append(action[f"leader_{motor}.pos"])
             if "gripper" in motor and "left" in motor:
-                left_arm_action.append(action["leader_{motor}.pos"])
+                left_arm_action.append(action[f"leader_{motor}.pos"])
 
         # Send right arm action
         if right_arm_action:
