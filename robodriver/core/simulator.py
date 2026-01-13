@@ -62,7 +62,9 @@ class Simulator:
 
         mujoco.mj_step(self.model, self.data)
 
-        self.viewer.sync()
+        if self.viewer is not None:
+            self.viewer.sync()
+            
         self.renderer.update_scene(self.data, self.cam)
         rgb = self.renderer.render()
 
