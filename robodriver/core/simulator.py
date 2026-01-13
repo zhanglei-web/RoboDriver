@@ -44,7 +44,7 @@ class SimulatorConfig():
 class Simulator:
     def __init__(
         self,
-        backend: str, 
+        # backend: str, 
         show_viewer: bool,
         # arm_config: dict[str, SimulatorArmConfig] | None,
         # urdf_path: dict[str, str] | str | None,
