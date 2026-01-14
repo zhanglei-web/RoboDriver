@@ -316,7 +316,7 @@ class Coordinator:
                     # 主线程执行可视化（阻塞直到窗口关闭或超时）
                     visualize_dataset(
                         dataset,
-                        mode="distant",
+                        mode="local",
                         episode_index=ep_index,
                         web_port=RERUN_WEB_PORT,
                         ws_port=RERUN_WS_PORT,
