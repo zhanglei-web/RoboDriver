@@ -152,10 +152,10 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 
 ```bash
 sudo bash ./scripts/find_can_port.sh
-# 记住这里的编号
+# 记住这里的USB位置
 ```
 
-然后根据刚才的命令输出，修改 `./scripts/can_multi_activate.sh` 中第4行。
+然后根据刚才的命令输出，修改 `./scripts/can_muti_activate.sh` 中第4行。
 
 ```bash
 USB_PORTS["1-1:1.0"]="can_right:1000000"
@@ -163,10 +163,10 @@ USB_PORTS["1-1:1.0"]="can_right:1000000"
 
 然后插入左臂，再次按照上文操作。
 
-然后运行，`can_multi_activate.sh` 激活：
+然后运行，`can_muti_activate.sh` 激活：
 
 ```bash
-sudo bash can_multi_activate.sh
+sudo bash ./scripts/can_muti_activate.sh
 ```
 
 ## 启动
@@ -217,9 +217,9 @@ source .venv/bin/activate
 运行：
 
 ```bash
-robodriver-run \ 
-    --robot.type=agilex_aloha_aio_dora \ 
-    --sim.xml_path=descriptions/agilex_aloha/scene.xml \ 
+robodriver-run \
+    --robot.type=agilex_aloha_aio_dora \
+    --sim.xml_path=descriptions/agilex_aloha/scene.xml \
     --sim.from_unit=rad
 ```
 
