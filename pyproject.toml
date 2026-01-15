@@ -13,7 +13,7 @@ authors = [
 requires-python = ">=3.10,<4.0"
 dependencies = [
     "torch>=2.7.1",
-    "lerobot>=0.4.0",
+    "lerobot-robodriver>=0.4.0",
     # "genesis-world",
     "mujoco",
 
