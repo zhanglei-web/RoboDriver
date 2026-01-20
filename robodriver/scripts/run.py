@@ -47,7 +47,8 @@ async def async_main(cfg: ControlPipelineConfig):
     teleop = (
         make_teleoperator_from_config(cfg.teleop) if cfg.teleop is not None else None
     )
-    sim = Simulator(backend=cfg.sim.backend, show_viewer=cfg.sim.show_viewer, arm_config=cfg.sim.arm_config, urdf_path = cfg.sim.urdf_path, mjcf_path=cfg.sim.mjcf_path) if cfg.sim is not None and (cfg.sim.arm_config is not None or cfg.sim.urdf_path is not None or cfg.sim.mjcf_path is not None) else None
+    # sim = Simulator(backend=cfg.sim.backend, show_viewer=cfg.sim.show_viewer, arm_config=cfg.sim.arm_config, urdf_path = cfg.sim.urdf_path, mjcf_path=cfg.sim.mjcf_path) if cfg.sim is not None and (cfg.sim.arm_config is not None or cfg.sim.urdf_path is not None or cfg.sim.mjcf_path is not None) else None
+    sim = Simulator(cfg.sim) if cfg.sim is not None and cfg.sim.xml_path is not None else None
     observation_sim = None
     if teleop is not None:
         teleop.connect()
@@ -80,7 +81,8 @@ async def async_main(cfg: ControlPipelineConfig):
                 daemon.set_obs_action(action)
 
             if sim is not None:
-                observation_sim = sim.update(action, prefix="leader_", suffix=".pos")
+                sim.send_action(action, prefix="leader_", suffix=".pos")
+                observation_sim = sim.get_render_image()
 
             tasks = []
             if observation is not None:
@@ -114,6 +116,8 @@ async def async_main(cfg: ControlPipelineConfig):
         logger.info("coordinator and daemon stop")
     finally:
         daemon.stop()
+        if sim is not None:
+            sim.stop()
         await coordinator.stop()
 
 

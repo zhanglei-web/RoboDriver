@@ -1,192 +1,220 @@
-import abc
-from typing import Any, Optional
+import mujoco
+import mujoco.viewer
+import logging_mp
 import numpy as np
-import genesis as gs
+import time
+import threading
 import cv2
-from pathlib import Path
 
+from typing import Any
 from dataclasses import dataclass
 
-@dataclass
-class SimulatorArmConfig():
-    path: str | None = None
-    type: str = "mjcf"
-    unit: str = "rad"
-    pos: Optional[tuple] = None
-    
+
+logger = logging_mp.get_logger(__name__)
 
 
 @dataclass
 class SimulatorConfig():
-    arm_config: dict[str, SimulatorArmConfig] | None = None
-    urdf_path: str | None = None
-    mjcf_path: str | None = None
-    backend: str = "cpu"
-    unit: str = "deg"
+    xml_path: str | None = None
+    from_unit: str = "deg"
+    render_height: int = 1200
+    render_width: int = 1600
+    timestep: float = 0.01
     show_viewer: bool = False
+    show_local: bool = False
+    log_data: bool = False
 
     def __post_init__(self):
-        if self.arm_config is not None:
-            for _, config in self.arm_config.items():
-                for attr in ["path", "type", "unit", "pos"]:
-                    if getattr(config, attr) is None:
-                        raise ValueError(
-                            f"Specifying '{attr}' is required for the arm to be used in sim"
-                        )
-    
-
-class Simulator:
-    def __init__(
-        self,
-        backend: str, 
-        show_viewer: bool,
-        arm_config: dict[str, SimulatorArmConfig] | None,
-        urdf_path: dict[str, str] | str | None,
-        mjcf_path: dict[str, str] | str | None
-    ):
-        self.arm = None
-        self.arms = None
-        self.units: dict[str, str] | None = None
-
-        backend_mapping = {
-            "cpu": gs.cpu,
-            "gpu": gs.gpu,
-            "cuda": gs.cuda,
-            "vulkan": gs.vulkan,
-            "metal": gs.metal,
-            "opengl": gs.opengl,
-        }
-
-        if backend not in backend_mapping:
-            valid_backends = ", ".join(backend_mapping.keys())
-            raise ValueError(f"Invalid backend '{backend}'. Valid options are: {valid_backends}")
-    
-        gs.init(backend=backend_mapping[backend], logging_level="warn")
-
-        self.scene = gs.Scene(
-            vis_options = gs.options.VisOptions(
-                shadow = False,
-                lights = [
-                    {"type": "directional", "dir": (-1, -1, -1), "color": (1.0, 1.0, 1.0), "intensity": 1.5},
-                    {"type": "directional", "dir": (-1, 1, -1), "color": (1.0, 1.0, 1.0), "intensity": 3.0},
-                    {"type": "directional", "dir": (1, 1, -1), "color": (1.0, 1.0, 1.0), "intensity": 1.5}
-                ]
-            ),
-            show_viewer=show_viewer,
-        )
-
-        _plane = self.scene.add_entity(
-            gs.morphs.Plane(),
-        )
-
-        if arm_config is not None:
-            for name, config in arm_config.items():
-                if config.type == "mjcf":
-                    self.arms[name] = self.scene.add_entity(
-                        gs.morphs.MJCF(
-                            file = config.path,
-                            pos = config.pos,
-                        ),
-                    )
-                elif config.type == "urdf":
-                    self.arms[name] = self.scene.add_entity(
-                        gs.morphs.URDF(
-                            file = config.path,
-                            pos = config.pos,
-                        ),
-                    )
-                self.units[name] = config.unit
-
-        else:
-            if urdf_path is not None:
-                self.arm = self.scene.add_entity(
-                    gs.morphs.URDF(
-                        file = urdf_path,
-                        pos = (0, 0, 0),
-                        fixed = True,
-                    ),
-                )
-            elif mjcf_path is not None:
-                self.arm = self.scene.add_entity(
-                    gs.morphs.MJCF(
-                        file = mjcf_path,
-                    ),
-                )
-
-        self.cam = self.scene.add_camera(
-            res    = (1600, 1200),
-            pos    = (-0.5, -0.5, 0.5),
-            lookat = (0, 0, 0.1),
-            fov    = 60,
-            GUI    = False,
-        )
-
-        self.scene.build()
-
-        # self.arm.control_dofs_position(
-        #     np.zeros(self.arm.n_dofs),
-        # )
-
-    def update(self, action: dict[str, Any], prefix: str, suffix: str):
-        print("action:", action)
-        
-        if self.arms is None:
-            goal_joint = [ val for _key, val in action.items()]
-
-            dofs_idx = [self.arm.get_joint(name.removeprefix(f"{prefix}").removesuffix(f"{suffix}")).dof_idx_local for name in action]
-            print("dofs_idx:", dofs_idx)
-
-            goal_joint_numpy = np.array(goal_joint, dtype=np.float32)
-            print("goal_joint_numpy:", goal_joint_numpy)
-
-
-            # 假设 goal_joint 是角度值，需要转换为弧度
-            goal_joint_degrees = np.array(goal_joint, dtype=np.float32)  # 角度值
-            print("原始角度值 (deg):", goal_joint_degrees)
-
-            # if 需要从角度转化弧度
-            # 转换为弧度
-            goal_joint_radians = goal_joint_degrees * (np.pi / 180.0)
-            print("转换为弧度 (rad):", goal_joint_radians)
-
-
-
-            self.arm.control_dofs_position(
-                goal_joint_radians,
-                dofs_idx,
+        if self.from_unit != "deg" and self.from_unit != "rad":
+            raise ValueError(
+                f"from_unit only support \'deg\' or \'rad\' in sim"
             )
+
+class SimulationThread(threading.Thread):
+    def __init__(self, model, data, config, running_event, lock):
+        super().__init__()
+        self.model = model
+        self.data = data
+        self.config = config
+        self.running_event = running_event
+        self.lock = lock
+
+    def run(self):
+        while self.running_event.is_set():
+            with self.lock:
+                mujoco.mj_step(self.model, self.data)
+            time.sleep(self.model.opt.timestep)
+    
+    def stop(self):
+        """停止线程"""
+        self.running_event.clear()
+
+class ViewerRendererThread(threading.Thread):
+    """Viewer和Render线程类"""
+    
+    def __init__(self, model, data, config, running_event, lock):
+        """
+        初始化线程
         
-        else:
-            for name, arm in self.arms.items():
-                goal_joint = [ val for _key, val in action.items()]
+        Args:
+            model: mujoco模型
+            data: mujoco数据
+            config: 配置参数
+            running_event: 运行事件 (threading.Event)
+            lock: 线程锁
+        """
+        super().__init__()
+        self.model = model
+        self.data = data
+        self.config = config
+        self.running_event = running_event
+        self.lock = lock
+        self.viewer = None
+        self.renderer = None
+        self.latest_image = None
+        self.image_lock = threading.Lock()
+        
+    def run(self):
+        """线程主函数"""
+        print("Viewer started in thread:", threading.current_thread().name)
+        print(f"show_viewer config: {self.config.show_viewer}")
+        
+        # 创建renderer
+        self.renderer = mujoco.Renderer(self.model, height=1200, width=1600)
+        
+        # 根据配置决定是否创建viewer
+        if self.config.show_viewer:
+            try:
+                print("Attempting to launch viewer...")
+                self.viewer = mujoco.viewer.launch_passive(self.model, self.data)
+                print("Viewer launched in passive mode")
+                if self.viewer is not None:
+                    print(f"Viewer is_running: {self.viewer.is_running()}")
+                else:
+                    print("Viewer is None after launch!")
+            except Exception as e:
+                print(f"Failed to launch viewer: {e}")
+                import traceback
+                traceback.print_exc()
+                self.viewer = None
+        
+        # 配置相机
+        cam = mujoco.MjvCamera()
+        mujoco.mjv_defaultCamera(cam)
+        
+        try:
+            iteration = 0
+            while self.running_event.is_set() and (self.viewer is None or self.viewer.is_running()):
+                iteration += 1
+                if iteration % 100 == 0:
+                    print(f"Viewer thread iteration {iteration}, viewer is None: {self.viewer is None}, is_running: {self.viewer.is_running() if self.viewer is not None else 'N/A'}")
+                
+                with self.lock:
+                    # 更新viewer显示
+                    if self.viewer is not None:
+                        self.viewer.sync()
+                    
+                    # 在同一线程中进行render操作
+                    self.renderer.update_scene(self.data, camera=cam)
+                    image = self.renderer.render()
+                    
+                    # 存储最新图像
+                    with self.image_lock:
+                        self.latest_image = image.copy() if image is not None else None
+                    
+                    # 显示渲染图像
+                    if image is not None and self.config.show_local == True:
+                        cv2.imshow('Render', image)
+                        cv2.waitKey(1)
+                
+                time.sleep(0.016)  # ~60Hz刷新率
+                
+        except KeyboardInterrupt:
+            print("Viewer thread interrupted")
+        except Exception as e:
+            print(f"Viewer thread error: {e}")
+            import traceback
+            traceback.print_exc()
+        finally:
+            print("Viewer thread exiting, cleanup...")
+            self.cleanup()
+            
+    def cleanup(self):
+        """清理资源"""
+        print("Cleaning up viewer/renderer resources")
+        if self.viewer is not None:
+            self.viewer.close()
+        if self.renderer is not None:
+            # 注意：mujoco.Renderer没有close方法，可以设置为None
+            self.renderer = None
+        if  self.config.show_local == True:
+            cv2.destroyAllWindows()
+        
+    def stop(self):
+        """停止线程"""
+        self.running_event.clear()
+    
+    def get_latest_image(self):
+        """获取最新渲染图像"""
+        with self.image_lock:
+            return self.latest_image.copy() if self.latest_image is not None else None
 
-                dofs_idx = [self.arm.get_joint(name.removeprefix(f"{prefix}").removeprefix(f"{name}_").removesuffix(f"{suffix}")).dof_idx_local for name in action]
-                print("dofs_idx:", dofs_idx)
+    
+class Simulator:
+    def __init__(self, config: SimulatorConfig):
+        self.config = config
 
-                goal_joint_numpy = np.array(goal_joint, dtype=np.float32)
-                print("goal_joint_numpy:", goal_joint_numpy)
+        self.model = mujoco.MjModel.from_xml_path(self.config.xml_path)
+        self.data = mujoco.MjData(self.model)
 
-                if self.units[name] == "rad":
-                    goal_joint_radians = np.array(goal_joint, dtype=np.float32)
-                    print("弧度值 (deg):", goal_joint_radians)
+        self.model.opt.timestep = config.timestep
 
-                    self.arm.control_dofs_position(
-                        goal_joint_radians,
-                        dofs_idx,
-                    )
+        self.running_event = threading.Event()
+        self.lock = threading.Lock()
+        
+        self.sim_thread = SimulationThread(self.model, self.data, self.config, self.running_event, self.lock)
+        self.view_thread = ViewerRendererThread(self.model, self.data, self.config, self.running_event, self.lock)
+        # self._last_update_time = None
+        # self._max_steps_per_update = 10  # Limit steps to prevent freezing
 
-                elif self.units[name] == "deg":
-                    goal_joint_degrees = np.array(goal_joint, dtype=np.float32)
-                    print("角度值 (deg):", goal_joint_degrees)
-                    goal_joint_radians = goal_joint_degrees * (np.pi / 180.0)
-                    print("弧度值 (rad):", goal_joint_radians)
+    def start(self):
+        """启动模拟器线程"""
+        self.running_event.set()
+        self.sim_thread.start()
+        self.view_thread.start()
 
-                    self.arm.control_dofs_position(
-                        goal_joint_radians,
-                        dofs_idx,
-                    )
+    def send_action(self, action: dict[str, Any], prefix: str, suffix: str):
+        actuators_idx = [self.model.actuator(name.removeprefix(f"{prefix}").removesuffix(f"{suffix}")).id for name in action]
+        
+        goal_joint = list(action.values())
+        goal_joint_numpy = np.array(goal_joint, dtype=np.float32)
+        
+        if self.config.from_unit == "deg":
+            goal_joint_radians = goal_joint_numpy * (np.pi / 180.0)
+        elif self.config.from_unit == "rad":
+            goal_joint_radians = goal_joint_numpy
 
-        self.scene.step()
-        rgb, _, _, _ = self.cam.render()
+        if self.config.log_data == True:
+            logger.info(f"action: {action}"), 
+            logger.info(f"actuators_idx: {actuators_idx}")
+            logger.info(f"goal_joint_numpy: {goal_joint_numpy}")
+            logger.info(f"goal_joint_radians: {goal_joint_radians}")
 
-        return rgb
+        for dof_id, joint_value in zip(actuators_idx, goal_joint_radians):
+            if dof_id >= 0:
+                with self.lock:
+                    self.data.ctrl[dof_id] = joint_value
+    
+    def get_render_image(self):
+        """获取最新渲染图像"""
+        return self.view_thread.get_latest_image()
+
+    
+    def stop(self):
+        """停止模拟器线程"""
+        self.running_event.clear()
+        # 等待线程结束
+        if self.sim_thread.is_alive():
+            self.sim_thread.join(timeout=1.0)
+        if self.view_thread.is_alive():
+            self.view_thread.join(timeout=1.0)

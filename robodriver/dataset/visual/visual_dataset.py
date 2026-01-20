@@ -149,7 +149,7 @@ def visualize_dataset(
     # Manually call python garbage collector after `rr.init` to avoid hanging in a blocking flush
     # when iterating on a dataloader with `num_workers` > 0
     # TODO(rcadene): remove `gc.collect` when rerun version 0.16 is out, which includes a fix
-    gc.collect()
+    # gc.collect()
 
     try:
         if mode == "distant":
@@ -164,31 +164,31 @@ def visualize_dataset(
                 rr.set_time("timestamp", timestamp=batch["timestamp"][i].item())
                 # display each camera image
                 for key in dataset.meta.camera_keys:
-                    rr.log(key, rr.Image(to_hwc_uint8_numpy(batch[key][i])))
+                    # rr.log(key, rr.Image(to_hwc_uint8_numpy(batch[key][i])))
 
-                    # if "depth" in key:
-                    #     continue
-                    # # TODO(rcadene): add `.compress()`? is it lossless?
-                    # # rr.log(key, rr.Image(to_hwc_uint8_numpy(batch[key][i])))
-                    # if len(dataset.meta.video_keys) > 0:
-                    #     # dataset.meta.video_path
-                    #     pass
-                    # elif len(dataset.meta.image_keys) > 0:
-                    #     img_path = dataset.root / dataset.meta.get_image_file_path(
-                    #         img_key=key,
-                    #         ep_index=episode_index,
-                    #         frame_index=batch["frame_index"][i],
-                    #     )
-                    #     # 1. 验证路径是否存在
-                    #     if not Path(img_path).exists():
-                    #         raise FileNotFoundError(
-                    #             f"Image path does not exist: {img_path}"
-                    #         )
-                    #     img = cv2.imread(img_path)
+                    if "depth" in key:
+                        continue
+                    # TODO(rcadene): add `.compress()`? is it lossless?
+                    # rr.log(key, rr.Image(to_hwc_uint8_numpy(batch[key][i])))
+                    if len(dataset.meta.video_keys) > 0:
+                        # dataset.meta.video_path
+                        rr.log(key, rr.Image(to_hwc_uint8_numpy(batch[key][i])))
+                    elif len(dataset.meta.image_keys) > 0:
+                        img_path = dataset.root / dataset.meta.get_image_file_path(
+                            img_key=key,
+                            ep_index=episode_index,
+                            frame_index=batch["frame_index"][i],
+                        )
+                        # 1. 验证路径是否存在
+                        if not Path(img_path).exists():
+                            raise FileNotFoundError(
+                                f"Image path does not exist: {img_path}"
+                            )
+                        img = cv2.imread(img_path)
 
-                    #     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-                    #     rr.log(key, rr.Image(img))
+                        rr.log(key, rr.Image(img))
 
                 # display each dimension of action space (e.g. actuators command)
                 if "action" in batch:

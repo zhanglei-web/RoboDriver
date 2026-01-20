@@ -144,12 +144,13 @@ class Coordinator:
             dataset_path = DOROBOT_DATASET
 
             git_branch_name = get_current_git_branch()
-            if "release" in git_branch_name or "main" in git_branch_name:
-                target_dir = dataset_path / date_str / "user" / task_dir / repo_id
-            elif "dev" in git_branch_name:
-                target_dir = dataset_path / date_str / "dev" / task_dir / repo_id
-            else:
-                target_dir = dataset_path / date_str / "dev" / task_dir / repo_id
+            target_dir = dataset_path / date_str / "user" / task_dir / repo_id
+            # if "release" in git_branch_name or "main" in git_branch_name:
+            #     target_dir = dataset_path / date_str / "user" / task_dir / repo_id
+            # elif "dev" in git_branch_name:
+            #     target_dir = dataset_path / date_str / "dev" / task_dir / repo_id
+            # else:
+            #     target_dir = dataset_path / date_str / "dev" / task_dir / repo_id
 
             # 判断是否存在对应文件夹以决定是否启用恢复模式
             resume = False
@@ -283,12 +284,13 @@ class Coordinator:
             # 构建目标目录路径
             dataset_path = DOROBOT_DATASET
             git_branch_name = get_current_git_branch()
-            if "release" in git_branch_name or "main" in git_branch_name:
-                target_dir = dataset_path / date_str / "user" / task_dir / repo_id
-            elif "dev" in git_branch_name:
-                target_dir = dataset_path / date_str / "dev" / task_dir / repo_id
-            else:
-                target_dir = dataset_path / date_str / "dev" / task_dir / repo_id
+            target_dir = dataset_path / date_str / "user" / task_dir / repo_id
+            # if "release" in git_branch_name or "main" in git_branch_name:
+            #     target_dir = dataset_path / date_str / "user" / task_dir / repo_id
+            # elif "dev" in git_branch_name:
+            #     target_dir = dataset_path / date_str / "dev" / task_dir / repo_id
+            # else:
+            #     target_dir = dataset_path / date_str / "dev" / task_dir / repo_id
 
             ep_index = find_epindex_from_dataid_json(target_dir, task_data_id)
 
@@ -314,7 +316,7 @@ class Coordinator:
                     # 主线程执行可视化（阻塞直到窗口关闭或超时）
                     visualize_dataset(
                         dataset,
-                        mode="distant",
+                        mode="local",
                         episode_index=ep_index,
                         web_port=RERUN_WEB_PORT,
                         ws_port=RERUN_WS_PORT,
@@ -335,7 +337,7 @@ class Coordinator:
             # 发送响应
             response_data = {
                 "data": {
-                    "url": f"http://localhost:{RERUN_WEB_PORT}/?url=ws://localhost:{RERUN_WS_PORT}",
+                    "url": f"http://127.0.0.1:{RERUN_WEB_PORT}/?url=rerun%2Bhttp%3A%2F%2F127.0.0.1%3A{RERUN_WS_PORT}%2Fproxy",
                 },
             }
             await self.send_response("start_replay", "success", response_data)

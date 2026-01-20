@@ -13,8 +13,9 @@ authors = [
 requires-python = ">=3.10,<4.0"
 dependencies = [
     "torch>=2.7.1",
-    "lerobot>=0.4.0",
-    "genesis-world",
+    "lerobot-robodriver>=0.4.0",
+    # "genesis-world",
+    "mujoco",
 
     "logging_mp",
     "python-socketio",
@@ -29,6 +30,8 @@ dependencies = [
 
 [project.scripts]
 robodriver-run="robodriver.scripts.run:main"
+robodriver-sim="robodriver.scripts.sim:main"
+robodriver-visual="robodriver.scripts.visual:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
