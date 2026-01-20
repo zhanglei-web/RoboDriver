@@ -55,8 +55,15 @@ git clone https://github.com/FlagOpen/RoboDriver.git && cd RoboDriver
 ```
 
 安装 `uv`，不要激活任何环境
+
 ```
 pip install uv
+```
+
+创建uv环境
+
+```
+uv venv -p 3.10
 ```
 
 安装项目:
