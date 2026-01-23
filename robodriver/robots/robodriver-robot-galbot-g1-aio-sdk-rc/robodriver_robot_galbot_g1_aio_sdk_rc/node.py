@@ -106,6 +106,7 @@ class GalbotG1AIOSDKRCRobotNode(SocketRobotNode):
         self.recv_follower_leg: list[float] = []
         self.recv_follower_head: list[float] = []
         self.recv_follower_chassis: list[float] = []
+        self.recv_follower_chassis_velocity: list[float] = []
 
         # Protobuf 类型映射
         self.protobuf_type_map = {
@@ -271,6 +272,7 @@ class GalbotG1AIOSDKRCRobotNode(SocketRobotNode):
                     self.recv_follower_head = joint_data
                 elif group_name == "chassis":
                     self.recv_follower_chassis = joint_data
+                    self.recv_follower_chassis_velocity = joint_sensor.velocity
 
                 # logger.info(f"Group: {group_name}, Data: {joint_data}")
 

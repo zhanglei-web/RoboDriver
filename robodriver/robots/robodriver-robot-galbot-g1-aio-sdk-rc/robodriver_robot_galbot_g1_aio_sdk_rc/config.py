@@ -48,6 +48,11 @@ class GalbotG1AIOSDKRCRobotConfig(RobotConfig):
             "chassis_pos2": Motor(25, "galbot-motor", norm_mode_body),
             "chassis_pos3": Motor(26, "galbot-motor", norm_mode_body),
             "chassis_pos4": Motor(27, "galbot-motor", norm_mode_body),
+
+            "chassis_vel1": Motor(28, "galbot-motor", norm_mode_body),
+            "chassis_vel2": Motor(29, "galbot-motor", norm_mode_body),
+            "chassis_vel3": Motor(30, "galbot-motor", norm_mode_body),
+            "chassis_vel4": Motor(31, "galbot-motor", norm_mode_body),
         }
     )
 
@@ -84,6 +89,11 @@ class GalbotG1AIOSDKRCRobotConfig(RobotConfig):
             "chassis_pos2": Motor(25, "galbot-motor", norm_mode_body),
             "chassis_pos3": Motor(26, "galbot-motor", norm_mode_body),
             "chassis_pos4": Motor(27, "galbot-motor", norm_mode_body),
+
+            "chassis_vel1": Motor(28, "galbot-motor", norm_mode_body),
+            "chassis_vel2": Motor(29, "galbot-motor", norm_mode_body),
+            "chassis_vel3": Motor(30, "galbot-motor", norm_mode_body),
+            "chassis_vel4": Motor(31, "galbot-motor", norm_mode_body),
         }
     )
 

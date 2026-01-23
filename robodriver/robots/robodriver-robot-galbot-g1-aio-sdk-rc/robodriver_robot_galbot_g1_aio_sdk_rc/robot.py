@@ -241,8 +241,10 @@ class GalbotG1AIOSDKRCRobot(Robot):
                 obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_leg[i-17]
             elif "head" in motor:
                 obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_head[i-22]
-            elif "chassis" in motor:
+            elif "chassis" in motor and "pos" in motor:
                 obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_chassis[i-24]
+            elif "chassis" in motor and "vel" in motor:
+                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_chassis_velocity[i-28]
             
 
         dt_ms = (time.perf_counter() - start) * 1e3
@@ -283,8 +285,10 @@ class GalbotG1AIOSDKRCRobot(Robot):
             elif "head" in motor:
                 act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_head[i-22]
 
-            elif "chassis" in motor:
+            elif "chassis" in motor and "pos" in motor:
                 act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_chassis[i-24]
+            elif "chassis" in motor and "vel" in motor:
+                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_chassis_velocity[i-28]
 
         dt_ms = (time.perf_counter() - start) * 1e3
         logger.debug(f"{self} read action: {dt_ms:.1f} ms")
