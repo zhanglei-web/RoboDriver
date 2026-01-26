@@ -24,7 +24,7 @@ class GalbotG1AIOSDKRCRobotConfig(RobotConfig):
             "right_arm_joint5": Motor(5, "galbot-motor", norm_mode_body),
             "right_arm_joint6": Motor(6, "galbot-motor", norm_mode_body),
             "right_arm_joint7": Motor(7, "galbot-motor", norm_mode_body),
-            "right_arm_gripper": Motor(8, "galbot-gripper", MotorNormMode.RANGE_0_100),
+            "right_gripper": Motor(8, "galbot-gripper", MotorNormMode.RANGE_0_100),
 
             "left_arm_joint1": Motor(9, "galbot-motor", norm_mode_body),
             "left_arm_joint2": Motor(10, "galbot-motor", norm_mode_body),
@@ -33,7 +33,7 @@ class GalbotG1AIOSDKRCRobotConfig(RobotConfig):
             "left_arm_joint5": Motor(13, "galbot-motor", norm_mode_body),
             "left_arm_joint6": Motor(14, "galbot-motor", norm_mode_body),
             "left_arm_joint7": Motor(15, "galbot-motor", norm_mode_body),
-            "left_arm_gripper": Motor(16, "galbot-gripper", MotorNormMode.RANGE_0_100),
+            "left_gripper": Motor(16, "galbot-gripper", MotorNormMode.RANGE_0_100),
 
             "leg_joint1": Motor(17, "galbot-motor", norm_mode_body),
             "leg_joint2": Motor(18, "galbot-motor", norm_mode_body),
@@ -65,7 +65,7 @@ class GalbotG1AIOSDKRCRobotConfig(RobotConfig):
             "right_arm_joint5": Motor(5, "galbot-motor", norm_mode_body),
             "right_arm_joint6": Motor(6, "galbot-motor", norm_mode_body),
             "right_arm_joint7": Motor(7, "galbot-motor", norm_mode_body),
-            "right_arm_gripper": Motor(8, "galbot-gripper", MotorNormMode.RANGE_0_100),
+            "right_gripper": Motor(8, "galbot-gripper", MotorNormMode.RANGE_0_100),
 
             "left_arm_joint1": Motor(9, "galbot-motor", norm_mode_body),
             "left_arm_joint2": Motor(10, "galbot-motor", norm_mode_body),
@@ -74,7 +74,7 @@ class GalbotG1AIOSDKRCRobotConfig(RobotConfig):
             "left_arm_joint5": Motor(13, "galbot-motor", norm_mode_body),
             "left_arm_joint6": Motor(14, "galbot-motor", norm_mode_body),
             "left_arm_joint7": Motor(15, "galbot-motor", norm_mode_body),
-            "left_arm_gripper": Motor(16, "galbot-gripper", MotorNormMode.RANGE_0_100),
+            "left_gripper": Motor(16, "galbot-gripper", MotorNormMode.RANGE_0_100),
 
             "leg_joint1": Motor(17, "galbot-motor", norm_mode_body),
             "leg_joint2": Motor(18, "galbot-motor", norm_mode_body),
