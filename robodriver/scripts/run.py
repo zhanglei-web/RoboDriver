@@ -46,7 +46,6 @@ async def async_main(cfg: ControlPipelineConfig):
 
     if "ros2" in cfg.robot.type or "ros2" in cfg.teleop.type:
         ros2_manager = ROS2_NodeManager()
-        ros2_manager.start()
 
     # robot = make_robot_from_config(cfg.robot)
     teleop = (
@@ -79,7 +78,9 @@ async def async_main(cfg: ControlPipelineConfig):
         ros2_manager.add_node(daemon.robot.get_node())
     if "ros2" in cfg.teleop.type:
         ros2_manager.add_node(teleop.get_node())
-
+    if "ros2" in cfg.robot.type or "ros2" in cfg.teleop.type:
+        ros2_manager.start()
+        
     try:
         while True:
             daemon.update()

@@ -21,6 +21,10 @@ class ROS2_NodeManager():
         self.running = False
         self._initialized = False
 
+        self._init_ros2()
+
+        self._initialized = True
+
     def _init_ros2(self):
         """初始化ROS2（线程安全）"""
         with self._lock:
