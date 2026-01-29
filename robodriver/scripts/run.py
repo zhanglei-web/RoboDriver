@@ -43,6 +43,10 @@ class ControlPipelineConfig:
 async def async_main(cfg: ControlPipelineConfig):
     logger.info(pformat(asdict(cfg)))
 
+    if "ros2" in cfg.robot.type or "ros2" in cfg.teleop.type:
+        import rclpy
+        rclpy.init()
+
     # robot = make_robot_from_config(cfg.robot)
     teleop = (
         make_teleoperator_from_config(cfg.teleop) if cfg.teleop is not None else None
