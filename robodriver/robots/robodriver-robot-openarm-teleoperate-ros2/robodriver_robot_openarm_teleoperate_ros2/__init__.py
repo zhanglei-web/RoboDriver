@@ -1,3 +1,3 @@
-from .config import GALAXEALITEAIORos2RobotConfig
-from .robot import GALAXEALITEAIORos2Robot
-from .status import GALAXEALITEAIORos2RobotStatus
+from .config import OPENARMRos2RobotConfig
+from .robot import OPENARMRos2Robot
+from .status import OPENARMRos2RobotStatus
