@@ -100,7 +100,7 @@ class ROS2_NodeManager():
         """独立线程执行ROS2 spin"""
         try:
             while self.running and self._executor is not None and rclpy.ok():
-                self._executor.spin_once(timeout_sec=0.1)
+                self._executor.spin_once(timeout_sec=0.01)
         except Exception as e:
             logger.error(f"[ROS2] Spin error: {e}")
         finally:
