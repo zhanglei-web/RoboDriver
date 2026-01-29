@@ -13,6 +13,10 @@ def make_teleoperator_from_config(config: TeleoperatorConfig) -> Teleoperator:
     logger.info(f"make teleoperator type: {config.type}")
     
     try:
+        if "ros2" in config.type:
+            import rclpy
+            rclpy.init()
+            
         return cast(Teleoperator, make_device_from_device_class(config))
     except Exception as e:
         logger.critical(f"Can't create teleoperator with config {config}")

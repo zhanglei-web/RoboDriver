@@ -9,7 +9,7 @@ from lerobot.motors import Motor, MotorNormMode
 class Actuator:
     id: int
 
-@TeleoperatorConfig.register_subclass("autotask")
+@TeleoperatorConfig.register_subclass("autotask_ros2")
 @dataclass
 class AutoTaskTeleoperatorConfig(TeleoperatorConfig):
 
