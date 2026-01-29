@@ -25,6 +25,7 @@ class GalaxeaLiteEEposeROS2Robot(Robot):
     name = "galaxea-lite-eepose-ros2"
 
     def __init__(self, config: GalaxeaLiteEEposeROS2RobotConfig):
+        rclpy.init()
         super().__init__(config)
         self.config = config
         self.robot_type = self.config.type
