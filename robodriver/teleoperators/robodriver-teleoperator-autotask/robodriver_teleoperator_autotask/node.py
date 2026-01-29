@@ -43,10 +43,10 @@ class AutoTaskTeleoperatorNode(ROS2Node):
 
 
     def _init_message_main_filters(self):
-        sub_pose_left = Subscriber(self, PoseStamped, '/motion_target/target_pose_arm_left', qos_profile=self.qos_best_effort)
-        sub_pose_right = Subscriber(self, PoseStamped, '/motion_target/target_pose_arm_right', qos_profile=self.qos_best_effort)
-        sub_gripper_left = Subscriber(self, JointState, '/motion_target/target_position_gripper_left', qos_profile=self.qos_best_effort)
-        sub_gripper_right = Subscriber(self, JointState, '/motion_target/target_position_gripper_right', qos_profile=self.qos_best_effort)
+        sub_pose_left = Subscriber(self, PoseStamped, '/autotask_motion_target/target_pose_arm_left', qos_profile=self.qos_best_effort)
+        sub_pose_right = Subscriber(self, PoseStamped, '/autotask_motion_target/target_pose_arm_right', qos_profile=self.qos_best_effort)
+        sub_gripper_left = Subscriber(self, JointState, '/autotask_motion_target/target_position_gripper_left', qos_profile=self.qos_best_effort)
+        sub_gripper_right = Subscriber(self, JointState, '/autotask_motion_target/target_position_gripper_right', qos_profile=self.qos_best_effort)
 
         self.pose_sync = ApproximateTimeSynchronizer(
             [sub_pose_left, sub_pose_right, sub_gripper_left, sub_gripper_right],
