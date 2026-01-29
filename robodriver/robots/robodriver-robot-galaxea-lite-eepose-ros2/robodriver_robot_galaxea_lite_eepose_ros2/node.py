@@ -258,4 +258,4 @@ class GalaxeaLiteEEposeROS2RobotNode(ROS2Node):
 # 保留ros_spin_thread函数（供外部调用）
 def ros_spin_thread(node):
     while rclpy.ok() and not getattr(node, "stop_spin", False):
-        rclpy.spin_once(node, timeout_sec=0.01)
+        rclpy.spin()
