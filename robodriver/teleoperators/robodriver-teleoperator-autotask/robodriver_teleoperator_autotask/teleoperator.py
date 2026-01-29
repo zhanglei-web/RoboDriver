@@ -105,6 +105,9 @@ class AutoTaskTeleoperator(Teleoperator):
         self.connected = False
         logger.info(f"{self} is not connected.")
 
+    def get_node(self):
+        return self.teleoperator_node
+
     def __del__(self):
         if getattr(self, "connected", False):
             self.disconnect()

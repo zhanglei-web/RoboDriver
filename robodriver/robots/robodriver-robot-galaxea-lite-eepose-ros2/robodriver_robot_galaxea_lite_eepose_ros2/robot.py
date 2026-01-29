@@ -286,6 +286,9 @@ class GalaxeaLiteEEposeROS2Robot(Robot):
         )
 
         return self.status.to_json()
+    
+    def get_node(self):
+        return self.robot_ros2_node
 
     def disconnect(self):
         if not self.is_connected:
