@@ -9,7 +9,6 @@ from typing import Any
 from lerobot.utils.errors import DeviceNotConnectedError, DeviceAlreadyConnectedError
 from lerobot.teleoperators.teleoperator import Teleoperator
 
-import rclpy
 
 from .config import AutoTaskTeleoperatorConfig
 from .node import  AutoTaskTeleoperatorNode
@@ -23,7 +22,6 @@ class AutoTaskTeleoperator(Teleoperator):
     name = "autotask"
 
     def __init__(self, config: AutoTaskTeleoperatorConfig):
-        rclpy.init()
         super().__init__(config)
         self.config = config
         self.teleoperator_type = self.config.type

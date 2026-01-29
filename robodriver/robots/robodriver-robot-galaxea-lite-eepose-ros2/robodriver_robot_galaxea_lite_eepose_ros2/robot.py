@@ -9,7 +9,6 @@ from lerobot.robots.robot import Robot
 from lerobot.utils.errors import DeviceNotConnectedError, DeviceAlreadyConnectedError
 from functools import cached_property
 
-import rclpy
 
 from .config import  GalaxeaLiteEEposeROS2RobotConfig
 from .status import GalaxeaLiteEEposeROS2RobotStatus
@@ -25,7 +24,6 @@ class GalaxeaLiteEEposeROS2Robot(Robot):
     name = "galaxea-lite-eepose-ros2"
 
     def __init__(self, config: GalaxeaLiteEEposeROS2RobotConfig):
-        rclpy.init()
         super().__init__(config)
         self.config = config
         self.robot_type = self.config.type

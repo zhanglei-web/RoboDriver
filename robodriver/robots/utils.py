@@ -39,6 +39,10 @@ def make_robot_from_config(config: RobotConfig) -> Robot:
     logger.info(f"make robot type: {config.type}")
 
     try:
+        if "ros2" in config.type:
+            import rclpy
+            rclpy.init()
+            
         return cast(Robot, make_device_from_device_class(config))
     except Exception as e:
         logger.critical(f"Can't create robot with config {config}")
