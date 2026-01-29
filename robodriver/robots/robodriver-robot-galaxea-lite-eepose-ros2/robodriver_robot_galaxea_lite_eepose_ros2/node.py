@@ -53,9 +53,9 @@ class GalaxeaLiteEEposeROS2RobotNode(Node):
         self._init_image_message_filters()
 
         self.recv_images: Dict[str, float] = {}
-        self.recv_follower: list[float] = {}
+        self.recv_follower: list[float] = []
         self.recv_images_status: Dict[str, int] = {}
-        self.recv_follower_status: list[int] = {}
+        self.recv_follower_status: list[int] = []
 
         self.lock = threading.Lock()
         self.running = False
@@ -215,6 +215,8 @@ class GalaxeaLiteEEposeROS2RobotNode(Node):
             rclpy.spin(self)
         except Exception as e:
             logger.error(f"[ROS2] Spin error: {e}")
+            super().destroy_node()
+            rclpy.shutdown()
 
     def stop(self):
         """停止 ROS2"""

@@ -98,6 +98,8 @@ class AutoTaskTeleoperatorNode(ROS2Node):
             rclpy.spin(self)
         except Exception as e:
             logger.error(f"[ROS2] Spin error: {e}")
+            super().destroy_node()
+            rclpy.shutdown()
 
     def stop(self):
         """停止 ROS2"""
@@ -105,6 +107,7 @@ class AutoTaskTeleoperatorNode(ROS2Node):
             return
 
         self.running = False
+        super().destroy_node()
         rclpy.shutdown()
 
         if getattr(self, "spin_thread", None):
