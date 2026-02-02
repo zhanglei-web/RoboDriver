@@ -12,6 +12,7 @@ from robodriver.core.coordinator import Coordinator
 from robodriver.core.monitor import Monitor
 from robodriver.core.simulator import SimulatorConfig
 from robodriver.core.simulator import Simulator
+from robodriver.core.ros2thread import ROS2_NodeManager
 from robodriver.robots.daemon import Daemon
 
 # from operating_platform.robot.robots.configs import RobotConfig
@@ -43,6 +44,9 @@ class ControlPipelineConfig:
 async def async_main(cfg: ControlPipelineConfig):
     logger.info(pformat(asdict(cfg)))
 
+    if "ros2" in cfg.robot.type or "ros2" in cfg.teleop.type:
+        ros2_manager = ROS2_NodeManager()
+
     # robot = make_robot_from_config(cfg.robot)
     teleop = (
         make_teleoperator_from_config(cfg.teleop) if cfg.teleop is not None else None
@@ -53,11 +57,8 @@ async def async_main(cfg: ControlPipelineConfig):
         sim.start()
 
     observation_sim = None
-    if teleop is not None:
-        teleop.connect()
 
-    daemon = Daemon(fps=DEFAULT_FPS)
-    daemon.start(cfg.robot)
+    daemon = Daemon(cfg.robot, fps=DEFAULT_FPS)
 
     monitor = Monitor(daemon)
     monitor.start()
@@ -70,6 +71,17 @@ async def async_main(cfg: ControlPipelineConfig):
         coordinator.stream_info_add("image_sim", 21)
     await coordinator.update_stream_info_to_server()
 
+    if "ros2" in cfg.robot.type:
+        ros2_manager.add_node(daemon.robot.get_node())
+    if "ros2" in cfg.teleop.type:
+        ros2_manager.add_node(teleop.get_node())
+    if "ros2" in cfg.robot.type or "ros2" in cfg.teleop.type:
+        ros2_manager.start()
+    
+    daemon.start()
+    if teleop is not None:
+        teleop.connect()
+        
     try:
         while True:
             daemon.update()
@@ -121,6 +133,8 @@ async def async_main(cfg: ControlPipelineConfig):
         daemon.stop()
         if sim is not None:
             sim.stop()
+        if ros2_manager is not None:
+            ros2_manager.stop()
         await coordinator.stop()
 
 
