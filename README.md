@@ -98,8 +98,8 @@ RoboDriver 已完成多款主流机器人的适配，按接入方式示例如下
 ### 🔌 ROS1 接入
 | 机器人型号 | 简介 | 代码链接 | 贡献人 |
 |------------|------|--------------|------------------------|
-| Realman 机械臂 | 基于Realman，6DOF+力控模块，3*RealSense相机 | [robodriver/robots/robodriver-robot-realman-aio-ros1](./robodriver/robots/robodriver-robot-realman-aio-ros1) |  [<img src="https://avatars.githubusercontent.com/zhanglei-web" width="50" height="50">](https://github.com/zhanglei-web) |
-| 乐聚kuavoPro4 | 乐聚人型机器人，双臂7DOF+灵巧手，2*RealSense相机| [robodriver/robots/robodriver-robot-leju-kuavo-teleoperate-ros1](./robodriver/robots/robodriver-robot-leju-kuavo-teleoperate-ros1) |  [<img src="https://avatars.githubusercontent.com/dirk656" width="50" height="50">](https://github.com/dirk656) |
+| Realman 机械臂 | 基于Realman，6DOF+力控模块，3*RealSense相机 | [robodriver/robots/robodriver-robot-realman-aio-ros1](./robodriver/robots/robodriver-robot-realman-aio-ros1) | [<img src="https://avatars.githubusercontent.com/zhanglei-web" width="50" height="50">](https://github.com/zhanglei-web) |
+| 乐聚 Kuavo 4 Pro | 乐聚kuavo4Pro机器人数采程序 | [robodriver/robots/robodriver-robot-leju-kuavo-teleoperate-ros1](./robodriver/robots/robodriver-robot-leju-kuavo-teleoperate-ros1) | [<img src="https://avatars.githubusercontent.com/dirk656" width="50" height="50">](https://github.com/dirk656) |
 
 ### 🔌 ROS2 接入
 | 机器人型号 | 简介 | 代码链接 | 贡献人 |
@@ -113,6 +113,14 @@ RoboDriver 已完成多款主流机器人的适配，按接入方式示例如下
 | Realman 机械臂 | 基于Realman，6DOF+力控模块，3*RealSense相机 | [robodriver/robots/robodriver-robot-realman1-aio-dora](./robodriver/robots/robodriver-robot-realman1-aio-dora) | [![XuRuntian](https://avatars.githubusercontent.com/XuRuntian?s=50)](https://github.com/XuRuntian) |
 | SO101 机械臂 | 开源轻量级机械臂，6DOF+末端夹爪，1*RealSense相机，1*RGB相机模块 | [robodriver/robots/robodriver-robot-so101-aio-dora](./robodriver/robots/robodriver-robot-so101-aio-dora) | [![Ryu-Yang](https://avatars.githubusercontent.com/Ryu-Yang?s=50)](https://github.com/Ryu-Yang) |
 | Franka | 工业级机械臂，6DOF+末端夹爪，1*RealSense相机 | [robodriver/robots/robodriver-robot-franka-aio-dora](./robodriver/robots/robodriver-robot-franka-aio-dora) | [![XuRuntian](https://avatars.githubusercontent.com/XuRuntian?s=50)](https://github.com/XuRuntian) |
+
+### 🔌 SDK 接入
+
+| 机器人型号 | 简介 | 代码链接 | 贡献人 |
+|--------------|--------------------------------------------------------------|------------------------------------------------------------------------------------------|------------------------|
+| 宇树 G1 | 宇树人形机器人G1，贡献单位：浪潮云信息技术股份公司 | [robodriver/robots/robodriver-robot-unitree-g1-sdk-py](./robodriver/robots/robodriver-robot-unitree-g1-sdk-py) | [![hixiaobo](https://avatars.githubusercontent.com/hixiaobo?s=50)](https://github.com/hixiaobo) |
+| | | | |
+
 
 > ✨ 说明：
 > 1. 接入方式命名规范：`robodriver-robot-[机器人型号]-[遥操方式]-[接入类型]`（如 `aio`/`follwer`/`teleoperate`, `ros2`/`dora`）；
