@@ -1,26 +1,27 @@
-import time
-import logging_mp
-import numpy as np
 
+import time
 from functools import cached_property
 from typing import Any
+
+import numpy as np
+import logging_mp
 
 from lerobot.cameras import make_cameras_from_configs
 from lerobot.utils.errors import DeviceNotConnectedError, DeviceAlreadyConnectedError
 from lerobot.robots.robot import Robot
 
-from .config import GalbotG1AIOSDKRCRobotConfig
-from .node import GalbotG1AIOSDKRCRobotNode
+from .config import DeeproboticsX30Ros1RobotConfig
+from .node import DeeproboticsX30Ros1Node
 
 
 logger = logging_mp.get_logger(__name__)
 
 
-class GalbotG1AIOSDKRCRobot(Robot):
-    config_class = GalbotG1AIOSDKRCRobotConfig
-    name = "galbot_g1_aio_sdk_rc"
+class DeeproboticsX30Ros1Robot(Robot):
+    config_class = DeeproboticsX30Ros1RobotConfig
+    name = "deeprobotics_x30_ros1"
 
-    def __init__(self, config: GalbotG1AIOSDKRCRobotConfig):
+    def __init__(self, config: DeeproboticsX30Ros1RobotConfig):
         super().__init__(config)
         self.config = config
         self.robot_type = self.config.type
@@ -33,25 +34,28 @@ class GalbotG1AIOSDKRCRobot(Robot):
 
         self.connect_excluded_cameras = ["image_pika_pose"]
 
-        self.robot_node = GalbotG1AIOSDKRCRobotNode("127.0.0.1")
-        self.robot_node.start()
+        self.robot_ros2_node = DeeproboticsX30Ros1Node()
+        self.robot_ros2_node.start()
 
         self.connected = False
         self.logs = {}
 
     # ========= features =========
+
     @property
     def _follower_motors_ft(self) -> dict[str, type]:
         return {
-            f"follower_{motor}.pos": float
-            for motor in self.follower_motors
+            f"follower_{joint_name}.pos": float
+            for comp_name, joints in self.follower_motors.items()
+            for joint_name in joints.keys()
         }
     
     @property
     def _leader_motors_ft(self) -> dict[str, type]:
         return {
-            f"leader_{motor}.pos": float
-            for motor in self.leader_motors
+            f"leader_{joint_name}.pos": float
+            for comp_name, joints in self.leader_motors.items()
+            for joint_name in joints.keys()
         }
 
     @property
@@ -66,18 +70,19 @@ class GalbotG1AIOSDKRCRobot(Robot):
         }
 
     @cached_property
-    def observation_features(self) -> dict[str, type | tuple]:
+    def observation_features(self) -> dict[str, Any]:
         return {**self._follower_motors_ft, **self._cameras_ft}
 
     @cached_property
-    def action_features(self) -> dict[str, type]:
+    def action_features(self) -> dict[str, Any]:
         return self._leader_motors_ft
 
-    # ========= connect / disconnect =========
     @property
     def is_connected(self) -> bool:
         return self.connected
-    
+
+    # ========= connect / disconnect =========
+
     def connect(self):
         timeout = 20
         start_time = time.perf_counter()
@@ -85,38 +90,55 @@ class GalbotG1AIOSDKRCRobot(Robot):
         if self.connected:
             raise DeviceAlreadyConnectedError(f"{self} already connected")
 
-        # 约定：node 里有 recv_images / recv_follower / recv_leader
+        node = self.robot_ros2_node
+
         conditions = [
             # 摄像头图像
             (
                 lambda: all(
-                    name in self.robot_node.recv_images
+                    name in node.recv_images
                     for name in self.cameras
                     if name not in self.connect_excluded_cameras
                 ),
                 lambda: [
                     name
                     for name in self.cameras
-                    if name not in self.robot_node.recv_images
+                    if name not in node.recv_images
                     and name not in self.connect_excluded_cameras
                 ],
                 "等待摄像头图像超时",
             ),
+            # 主臂
             (
-                lambda: len(self.robot_node.recv_follower_arm_right) > 0,
-                lambda: [] if len(self.robot_node.recv_follower_arm_right) > 0 else ["recv_follower_joint_right"],
-                "等待右臂关节角度超时",
+                lambda: all(
+                    any(name in key for key in node.recv_leader)
+                    for name in self.leader_motors
+                ),
+                lambda: [
+                    name
+                    for name in self.leader_motors
+                    if not any(name in key for key in node.recv_leader)
+                ],
+                "等待主臂数据超时",
             ),
+            # 从臂
             (
-                lambda: len(self.robot_node.recv_follower_arm_left) > 0,
-                lambda: [] if len(self.robot_node.recv_follower_arm_left) > 0 else ["recv_follower_joint_left"],
-                "等待左臂关节角度超时",
+                lambda: all(
+                    any(name in key for key in node.recv_follower)
+                    for name in self.follower_motors
+                ),
+                lambda: [
+                    name
+                    for name in self.follower_motors
+                    if not any(name in key for key in node.recv_follower)
+                ],
+                "等待从臂数据超时",
             ),
         ]
 
         completed = [False] * len(conditions)
 
-        while True:
+        while True:            
             for i, (cond, _get_missing, _msg) in enumerate(conditions):
                 if not completed[i] and cond():
                     completed[i] = True
@@ -176,19 +198,26 @@ class GalbotG1AIOSDKRCRobot(Robot):
             cam_received = [
                 name
                 for name in self.cameras
-                if name in self.robot_node.recv_images
+                if name in node.recv_images
                 and name not in self.connect_excluded_cameras
             ]
             success_messages.append(f"摄像头: {', '.join(cam_received)}")
 
         if conditions[1][0]():
-            success_messages.append(f"右臂关节角度: 已接收 ({len(self.robot_node.recv_follower_arm_right)}个数据点)")
-
+            leader_received = [
+                name
+                for name in self.leader_motors
+                if any(name in key for key in node.recv_leader)
+            ]
+            success_messages.append(f"主臂数据: {', '.join(leader_received)}")
 
         if conditions[2][0]():
-            success_messages.append(f"左臂关节角度: 已接收 ({len(self.robot_node.recv_follower_arm_left)}个数据点)")
-
-        time.sleep(1)
+            follower_received = [
+                name
+                for name in self.follower_motors
+                if any(name in key for key in node.recv_follower)
+            ]
+            success_messages.append(f"从臂数据: {', '.join(follower_received)}")
 
         log_message = "\n[连接成功] 所有设备已就绪:\n"
         log_message += "\n".join(f"  - {msg}" for msg in success_messages)
@@ -227,42 +256,24 @@ class GalbotG1AIOSDKRCRobot(Robot):
         start = time.perf_counter()
         obs_dict: dict[str, Any] = {}
 
-        for i, motor in enumerate(self.follower_motors):
-            if "joint" in motor and "arm" in motor and "right" in motor:
-                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_arm_right[i]
-            elif "gripper" in motor and "right" in motor:
-                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_gripper_right[0]
+        node = self.robot_ros2_node
 
-            elif "joint" in motor and "arm" in motor and "left" in motor:
-                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_arm_left[i-8]
-            elif "gripper" in motor and "left" in motor:
-                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_gripper_left[0]
-
-            elif "leg" in motor:
-                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_leg[i-16]
-            elif "head" in motor:
-                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_head[i-21]
-            elif "chassis" in motor and "pos" in motor:
-                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_chassis[i-23]
-            elif "chassis" in motor and "vel" in motor:
-                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_chassis_velocity[i-27]
-
-            elif "odom" in motor and "pose" in motor and "position" in motor:
-                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_odom_pose_position[i-31]
-            elif "odom" in motor and "pose" in motor and "orientation" in motor:
-                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_odom_pose_orientation[i-33]
-
-            elif "odom" in motor and "twist" in motor and "linear" in motor:
-                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_odom_pose_position[i-35]
-            elif "odom" in motor and "twist" in motor and "angular" in motor:
-                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_odom_pose_orientation[i-37]
-
+        # follower joints
+        for comp_name, joints in self.follower_motors.items():
+            state_dict = node.recv_follower.get(comp_name)
+            if state_dict:
+                position = state_dict.get("position", [])
+                name = state_dict.get("name", [])
+                
+                for joint_name, pos in zip(name, position):
+                    obs_dict[f"follower_{joint_name}.pos"] = float(pos)
         dt_ms = (time.perf_counter() - start) * 1e3
         logger.debug(f"{self} read follower state: {dt_ms:.1f} ms")
 
+        # camera images
         for cam_key, _cam in self.cameras.items():
             start = time.perf_counter()
-            for name, val in self.robot_node.recv_images.items():
+            for name, val in node.recv_images.items():
                 if cam_key == name or cam_key in name:
                     obs_dict[cam_key] = val
                     break
@@ -271,7 +282,6 @@ class GalbotG1AIOSDKRCRobot(Robot):
 
         return obs_dict
     
-
     def get_action(self) -> dict[str, Any]:
         if not self.connected:
             raise DeviceNotConnectedError(f"{self} is not connected.")
@@ -279,44 +289,24 @@ class GalbotG1AIOSDKRCRobot(Robot):
         start = time.perf_counter()
         act_dict: dict[str, Any] = {}
 
-        for i, motor in enumerate(self.follower_motors):
-            if "joint" in motor and "arm" in motor and "right" in motor:
-                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_arm_right[i]
-            elif "gripper" in motor and "right" in motor:
-                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_gripper_right[0]
+        node = self.robot_ros2_node
 
-            elif "joint" in motor and "arm" in motor and "left" in motor:
-                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_arm_left[i-8]
-            elif "gripper" in motor and "left" in motor:
-                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_gripper_left[0]
-
-            elif "leg" in motor:
-                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_leg[i-16]
-            elif "head" in motor:
-                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_head[i-21]
-
-            elif "chassis" in motor and "pos" in motor:
-                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_chassis[i-23]
-            elif "chassis" in motor and "vel" in motor:
-                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_chassis_velocity[i-27]
-
-            elif "odom" in motor and "pose" in motor and "position" in motor:
-                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_odom_pose_position[i-31]
-            elif "odom" in motor and "pose" in motor and "orientation" in motor:
-                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_odom_pose_orientation[i-33]
-
-            elif "odom" in motor and "twist" in motor and "linear" in motor:
-                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_odom_pose_position[i-35]
-            elif "odom" in motor and "twist" in motor and "angular" in motor:
-                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_odom_pose_orientation[i-37]
+        for comp_name, joints in self.leader_motors.items():
+            state_dict = node.recv_leader.get(comp_name)
+            if state_dict:
+                position = state_dict.get("position", [])
+                name = state_dict.get("name", [])
+                
+                for joint_name, pos in zip(name, position):
+                    act_dict[f"leader_{joint_name}.pos"] = float(pos)
 
         dt_ms = (time.perf_counter() - start) * 1e3
         logger.debug(f"{self} read action: {dt_ms:.1f} ms")
 
         return act_dict
 
-
     # ========= send_action =========
+
     def send_action(self, action: dict[str, Any]) -> dict[str, Any]:
         """The provided action is expected to be a vector."""
         if not self.is_connected:
@@ -324,20 +314,11 @@ class GalbotG1AIOSDKRCRobot(Robot):
                 f"{self} is not connected. You need to run `robot.connect()`."
             )
 
-        # goal_joint = [val for _key, val in action.items()]
-        # goal_joint_numpy = np.array(goal_joint, dtype=np.float32)
+        goal_joint = [val for _key, val in action.items()]
+        goal_joint_numpy = np.array(goal_joint, dtype=np.float32)
 
-        # Extract motor names from keys like 'leader_elbow.pos' -> 'elbow'
-        cleaned_action = {}
-        for key, value in action.items():
-            if key.startswith("leader_") and key.endswith(".pos"):
-                motor = key[len("leader_"):-len(".pos")]
-                cleaned_action[motor] = value
-            else:
-                raise ValueError(f"Unexpected action key format: {key}. Expected 'leader_{{motor}}.pos'.")
-
-        # Send the cleaned action to the ROS 2 node
-        # self.robot_ros2_node.ros2_send(cleaned_action)
+        # 当前 ZMQ Node 没有实现下行控制，如果以后需要，可以在 node 中加一个 ZMQ PUB
+        if hasattr(self.robot_ros2_node, "ros2_send"):
+            self.robot_ros2_node.ros2_send("action_joint", goal_joint_numpy)
 
         return {f"{arm_motor}.pos": val for arm_motor, val in action.items()}
-
