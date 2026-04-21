@@ -98,9 +98,9 @@ def generate_trajectory_point(
     # 构建关节位置向量，按照机器人要求的顺序
     joint_pos_vec = []
     
-    # 顺序: head -> leg -> left_arm -> right_arm -> left_gripper -> right_gripper
-    joint_pos_vec.extend(parts["head"])
+    # 顺序: leg -> head -> left_arm -> right_arm -> left_gripper -> right_gripper
     joint_pos_vec.extend(parts["leg"])
+    joint_pos_vec.extend(parts["head"])
     joint_pos_vec.extend(parts["left_arm"])
     joint_pos_vec.extend(parts["right_arm"])
     # 夹爪位置值（应用缩放比例）
@@ -551,7 +551,8 @@ def replay_parquet(
     
     # 构建轨迹点 + 底盘速度数据（同步存储）
     traj = Trajectory()
-    traj.joint_groups = ["head", "leg", "left_arm", "right_arm", "left_gripper", "right_gripper"]
+    # traj.joint_groups = ["head", "leg", "left_arm", "right_arm", "left_gripper", "right_gripper"]
+    traj.joint_names = ["leg", "head", "left_arm", "right_arm", "left_gripper", "right_gripper"]
     # traj.points = []
     point_list=[]
     
