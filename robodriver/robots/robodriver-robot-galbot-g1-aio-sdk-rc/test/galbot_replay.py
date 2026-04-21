@@ -551,7 +551,7 @@ def replay_parquet(
     
     # 构建轨迹点 + 底盘速度数据（同步存储）
     traj = Trajectory()
-    traj.joint_groups = ["leg", "head", "left_arm", "right_arm", "left_gripper", "right_gripper"]
+    traj.joint_groups = ["head", "leg", "left_arm", "right_arm", "left_gripper", "right_gripper"]
     # traj.points = []
     point_list=[]
     
