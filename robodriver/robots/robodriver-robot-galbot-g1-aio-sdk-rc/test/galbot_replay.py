@@ -534,9 +534,11 @@ def replay_parquet(
     logger.info(f"开始回放文件: {parquet_path}")
     
     # 初始化机器人
-    robot = GalbotRobot.get_instance()
-    robot.init()
+    robot = GalbotRobot()
+    ok = robot.init()
     time.sleep(1.5)  # 增加初始化等待时间
+    if not ok:
+        raise RuntimeError("GalbotRobot.init() failed")
     logger.info("机器人初始化完成")
     
     # 读取数据
@@ -551,8 +553,23 @@ def replay_parquet(
     
     # 构建轨迹点 + 底盘速度数据（同步存储）
     traj = Trajectory()
+    traj.joint_groups = []
     # traj.joint_groups = ["head", "leg", "left_arm", "right_arm", "left_gripper", "right_gripper"]
-    traj.joint_names = ["leg", "head", "left_arm", "right_arm", "left_gripper", "right_gripper"]
+    # traj.joint_names = ["leg", "head", "left_arm", "right_arm", "left_gripper", "right_gripper"]
+
+    JOINT_GROUP_ORDER = [
+        "leg",
+        "head",
+        "left_arm",
+        "right_arm",
+        "left_gripper",
+        "right_gripper",
+    ]
+    expanded_joint_names: list[str] = []
+    for group_name in JOINT_GROUP_ORDER:
+        expanded_joint_names.extend(robot.get_joint_names(True, [group_name]))
+
+    traj.joint_names = expanded_joint_names
     # traj.points = []
     point_list=[]
     
