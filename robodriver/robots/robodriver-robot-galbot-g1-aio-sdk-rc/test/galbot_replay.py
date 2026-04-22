@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-GRIPPER_VALUE_TO_WIDTH_M = 0.001
+GRIPPER_VALUE_TO_WIDTH_M = 0.01
 
 def to_list(x: Any) -> List[float]:
     """
