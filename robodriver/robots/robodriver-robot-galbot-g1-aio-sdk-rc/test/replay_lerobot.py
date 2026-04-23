@@ -124,104 +124,122 @@ def split_action(a: list[float] | np.ndarray, action_names: list[str] | None = N
     ODOM_TWIST_LINEAR_LEN = 2
     ODOM_TWIST_ANGULAR_LEN = 1
 
-    # # If action_names is provided, try to use semantic parsing first so replay
-    # # can tolerate dataset-specific layouts and extra non-joint signals.
-    # if action_names is not None and len(action_names) == len(a):
-    #     normalized_names = [name.lower() for name in action_names]
+    # If action_names is provided, try to use semantic parsing first so replay
+    # can tolerate dataset-specific layouts and extra non-joint signals.
+    if action_names is not None and len(action_names) == len(a):
+        normalized_names = [name.lower() for name in action_names]
 
-    #     def extract_joint_index(name: str) -> int | None:
-    #         match = re.search(r"joint(\d+)", name)
-    #         if match is None:
-    #             return None
-    #         return int(match.group(1))
+        def extract_joint_index(name: str) -> int | None:
+            match = re.search(r"joint(\d+)", name)
+            if match is None:
+                return None
+            return int(match.group(1))
 
-    #     def collect_joint_indices(*required_tokens: str) -> list[int]:
-    #         indices: list[tuple[int, int]] = []
-    #         for i, name in enumerate(normalized_names):
-    #             if all(token in name for token in required_tokens):
-    #                 joint_idx = extract_joint_index(name)
-    #                 if joint_idx is not None:
-    #                     indices.append((joint_idx, i))
-    #         return [i for _, i in sorted(indices)]
+        def collect_joint_indices(*required_tokens: str) -> list[int]:
+            indices: list[tuple[int, int]] = []
+            for i, name in enumerate(normalized_names):
+                if all(token in name for token in required_tokens):
+                    joint_idx = extract_joint_index(name)
+                    if joint_idx is not None:
+                        indices.append((joint_idx, i))
+            return [i for _, i in sorted(indices)]
 
-    #     def find_gripper_index(side: str) -> int | None:
-    #         for i, name in enumerate(normalized_names):
-    #             if side in name and "gripper" in name:
-    #                 return i
-    #         return None
+        def find_gripper_index(side: str) -> int | None:
+            for i, name in enumerate(normalized_names):
+                if side in name and "gripper" in name:
+                    return i
+            return None
 
-    #     leg_indices = collect_joint_indices("leg", "joint")
-    #     right_arm_indices = collect_joint_indices("right", "arm", "joint")
-    #     left_arm_indices = collect_joint_indices("left", "arm", "joint")
-    #     head_indices = collect_joint_indices("head", "joint")
-    #     right_gripper_idx = find_gripper_index("right")
-    #     left_gripper_idx = find_gripper_index("left")
+        leg_indices = collect_joint_indices("leg", "joint")
+        right_arm_indices = collect_joint_indices("right", "arm", "joint")
+        left_arm_indices = collect_joint_indices("left", "arm", "joint")
+        head_indices = collect_joint_indices("head", "joint")
+        right_gripper_idx = find_gripper_index("right")
+        left_gripper_idx = find_gripper_index("left")
 
-    #     # If we found the main groups, use name-based parsing and ignore
-    #     # unrelated signals such as chassis or odometry state.
-    #     if right_arm_indices and left_arm_indices:
-    #         return {
-    #             "leg": [a[i] for i in leg_indices] if leg_indices else [],
-    #             "right_arm": [a[i] for i in right_arm_indices],
-    #             "right_gripper": (a[right_gripper_idx] if right_gripper_idx is not None else 0.0),
-    #             "left_arm": [a[i] for i in left_arm_indices],
-    #             "left_gripper": (a[left_gripper_idx] if left_gripper_idx is not None else 0.0),
-    #             "head": [a[i] for i in head_indices] if head_indices else [],
-    #         }
+        ODOM_TWIST_START = 35
 
-    # Default parsing for galbot dataset structure
-    # Structure: [leg(5), right_arm(7), right_gripper(1), left_arm(7),
-    #            left_gripper(1), head(2), ...]
-    expected_min_length = (
-        leg_joints + right_arm_joints + right_gripper_joints + left_arm_joints + left_gripper_joints + head_joints + ODOM_TWIST_LINEAR_LEN + ODOM_TWIST_ANGULAR_LEN
-    )
-    if len(a) < expected_min_length:
-        raise ValueError(f"Action length {len(a)} is too short. Expected at least {expected_min_length} elements")
+        odom_twist_linear = []
+        odom_twist_angular = []
+        if len(a) >= ODOM_TWIST_START + ODOM_TWIST_LINEAR_LEN + ODOM_TWIST_ANGULAR_LEN:
+            odom_twist_linear = a[ODOM_TWIST_START : ODOM_TWIST_START + ODOM_TWIST_LINEAR_LEN].tolist()
+            odom_twist_angular = [float(a[ODOM_TWIST_START + ODOM_TWIST_LINEAR_LEN])]
 
-    # Parse action array positionally
-    idx = 0
-    leg = a[idx : idx + leg_joints].tolist()
-    idx += leg_joints
-    right_arm = a[idx : idx + right_arm_joints].tolist()
-    idx += right_arm_joints
-    right_gripper = float(a[idx]) if len(a) > idx else 0.0
-    idx += right_gripper_joints
-    left_arm = a[idx : idx + left_arm_joints].tolist()
-    idx += left_arm_joints
-    left_gripper = float(a[idx]) if len(a) > idx else 0.0
-    idx += left_gripper_joints
-    head = a[idx : idx + head_joints].tolist()
+        # If we found the main groups, use name-based parsing and ignore
+        # unrelated signals such as chassis or odometry state.
+        if right_arm_indices and left_arm_indices:
+            result = {
+                "leg": [a[i] for i in leg_indices] if leg_indices else [],
+                "right_arm": [a[i] for i in right_arm_indices],
+                "right_gripper": (a[right_gripper_idx] if right_gripper_idx is not None else 0.0),
+                "left_arm": [a[i] for i in left_arm_indices],
+                "left_gripper": (a[left_gripper_idx] if left_gripper_idx is not None else 0.0),
+                "head": [a[i] for i in head_indices] if head_indices else [],
+            }
 
-    # Parse odom twist (indices 35-38)
-    # Full structure: leg(5) + right_arm(7) + right_gripper(1) + left_arm(7) +
-    #                 left_gripper(1) + head(2) = 23
-    #                 chassis_pos(4) = 27
-    #                 chassis_vel(4) = 31
-    #                 odom_pose(4) = 35
-    #                 odom_twist(3) = 38
-    ODOM_TWIST_START = 35
+        # Only add odom_twist if data is available
+        if odom_twist_linear and odom_twist_angular:
+            result["odom_twist_linear"] = odom_twist_linear
+            result["odom_twist_angular"] = odom_twist_angular
 
-    odom_twist_linear = []
-    odom_twist_angular = []
-    if len(a) >= ODOM_TWIST_START + ODOM_TWIST_LINEAR_LEN + ODOM_TWIST_ANGULAR_LEN:
-        odom_twist_linear = a[ODOM_TWIST_START : ODOM_TWIST_START + ODOM_TWIST_LINEAR_LEN].tolist()
-        odom_twist_angular = [float(a[ODOM_TWIST_START + ODOM_TWIST_LINEAR_LEN])]
+        return result
+    else:
+        raise ValueError(f"Action length {len(a)} error, \"action_names is not None and len(action_names) == len(a)\"")
 
-    result = {
-        "leg": leg,
-        "right_arm": right_arm,
-        "right_gripper": right_gripper,
-        "left_arm": left_arm,
-        "left_gripper": left_gripper,
-        "head": head,
-    }
 
-    # Only add odom_twist if data is available
-    if odom_twist_linear and odom_twist_angular:
-        result["odom_twist_linear"] = odom_twist_linear
-        result["odom_twist_angular"] = odom_twist_angular
+    # # Default parsing for galbot dataset structure
+    # # Structure: [leg(5), right_arm(7), right_gripper(1), left_arm(7),
+    # #            left_gripper(1), head(2), ...]
+    # expected_min_length = (
+    #     leg_joints + right_arm_joints + right_gripper_joints + left_arm_joints + left_gripper_joints + head_joints + ODOM_TWIST_LINEAR_LEN + ODOM_TWIST_ANGULAR_LEN
+    # )
+    # if len(a) < expected_min_length:
+    #     raise ValueError(f"Action length {len(a)} is too short. Expected at least {expected_min_length} elements")
 
-    return result
+    # # Parse action array positionally
+    # idx = 0
+    # leg = a[idx : idx + leg_joints].tolist()
+    # idx += leg_joints
+    # right_arm = a[idx : idx + right_arm_joints].tolist()
+    # idx += right_arm_joints
+    # right_gripper = float(a[idx]) if len(a) > idx else 0.0
+    # idx += right_gripper_joints
+    # left_arm = a[idx : idx + left_arm_joints].tolist()
+    # idx += left_arm_joints
+    # left_gripper = float(a[idx]) if len(a) > idx else 0.0
+    # idx += left_gripper_joints
+    # head = a[idx : idx + head_joints].tolist()
+
+    # # Parse odom twist (indices 35-38)
+    # # Full structure: leg(5) + right_arm(7) + right_gripper(1) + left_arm(7) +
+    # #                 left_gripper(1) + head(2) = 23
+    # #                 chassis_pos(4) = 27
+    # #                 chassis_vel(4) = 31
+    # #                 odom_pose(4) = 35
+    # #                 odom_twist(3) = 38
+    # ODOM_TWIST_START = 35
+
+    # odom_twist_linear = []
+    # odom_twist_angular = []
+    # if len(a) >= ODOM_TWIST_START + ODOM_TWIST_LINEAR_LEN + ODOM_TWIST_ANGULAR_LEN:
+    #     odom_twist_linear = a[ODOM_TWIST_START : ODOM_TWIST_START + ODOM_TWIST_LINEAR_LEN].tolist()
+    #     odom_twist_angular = [float(a[ODOM_TWIST_START + ODOM_TWIST_LINEAR_LEN])]
+
+    # result = {
+    #     "leg": leg,
+    #     "right_arm": right_arm,
+    #     "right_gripper": right_gripper,
+    #     "left_arm": left_arm,
+    #     "left_gripper": left_gripper,
+    #     "head": head,
+    # }
+
+    # # Only add odom_twist if data is available
+    # if odom_twist_linear and odom_twist_angular:
+    #     result["odom_twist_linear"] = odom_twist_linear
+    #     result["odom_twist_angular"] = odom_twist_angular
+
+    # return result
 
 
 def infer_gripper_format(
