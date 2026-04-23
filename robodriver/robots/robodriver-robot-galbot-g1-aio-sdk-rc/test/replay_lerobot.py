@@ -36,7 +36,7 @@ JOINT_GROUP_ORDER = [
     "head",
 ]
 DEFAULT_PREPARE_DELTA_THRESHOLD_RAD = 0.001
-DEFAULT_GRIPPER_FORMAT = "auto"
+DEFAULT_GRIPPER_FORMAT = "scaled"
 GRIPPER_RAW_VALUE_THRESHOLD = 5.0
 PREPARE_TIMEOUT_MARGIN_S = 5.0
 DEFAULT_GRIPPER_FORCE_N = 10.0
@@ -1087,13 +1087,13 @@ if __name__ == "__main__":
     ap.add_argument(
         "--gripper-scale",
         type=float,
-        default=100.0,
+        default=1.0,
         help="Scaling factor applied only when --gripper-format=scaled.",
     )
     ap.add_argument(
         "--gripper-offset",
         type=float,
-        default=0.6,
+        default=-10.0,
         help="Offset applied only when --gripper-format=scaled. Default is 0.6",
     )
     ap.add_argument(
