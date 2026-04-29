@@ -253,9 +253,9 @@ class GalbotG1AIOSDKRCRobot(Robot):
                 obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_odom_pose_orientation[i-33]
 
             elif "odom" in motor and "twist" in motor and "linear" in motor:
-                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_odom_pose_position[i-35]
+                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_odom_twist_linear[i-35]
             elif "odom" in motor and "twist" in motor and "angular" in motor:
-                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_odom_pose_orientation[i-37]
+                obs_dict[f"follower_{motor}.pos"] = self.robot_node.recv_follower_odom_twist_angular[i-37]
 
         dt_ms = (time.perf_counter() - start) * 1e3
         logger.debug(f"{self} read follower state: {dt_ms:.1f} ms")
@@ -306,9 +306,9 @@ class GalbotG1AIOSDKRCRobot(Robot):
                 act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_odom_pose_orientation[i-33]
 
             elif "odom" in motor and "twist" in motor and "linear" in motor:
-                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_odom_pose_position[i-35]
+                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_odom_twist_linear[i-35]
             elif "odom" in motor and "twist" in motor and "angular" in motor:
-                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_odom_pose_orientation[i-37]
+                act_dict[f"leader_{motor}.pos"] = self.robot_node.recv_follower_odom_twist_angular[i-37]
 
         dt_ms = (time.perf_counter() - start) * 1e3
         logger.debug(f"{self} read action: {dt_ms:.1f} ms")

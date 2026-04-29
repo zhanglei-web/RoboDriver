@@ -22,6 +22,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
+GRIPPER_VALUE_TO_WIDTH_M = 0.01
+
 def to_list(x: Any) -> List[float]:
     """
     将 parquet 中的 action 单元转换为 Python list
@@ -47,12 +49,12 @@ def to_list(x: Any) -> List[float]:
     raise TypeError(f"不支持的动作类型: {type(x)}")
 
 
-def split_action_31(action: List[float]) -> Dict[str, List[float]]:
+def split_action_38(action: List[float]) -> Dict[str, List[float]]:
     """
-    将 31 维动作向量拆分为各个部分
+    将 38 维动作向量拆分为各个部分
     
     Args:
-        action: 31 维动作向量
+        action: 38 维动作向量
         
     Returns:
         Dict[str, List[float]]: 拆分后的动作部分
@@ -60,8 +62,8 @@ def split_action_31(action: List[float]) -> Dict[str, List[float]]:
     Raises:
         ValueError: 当动作维度不正确时
     """
-    if len(action) != 31:
-        raise ValueError(f"期望 31 维动作，实际得到 {len(action)} 维")
+    if len(action) != 38:
+        raise ValueError(f"期望 38 维动作，实际得到 {len(action)} 维")
     
     return {
         "right_arm": action[0:7],
@@ -71,6 +73,7 @@ def split_action_31(action: List[float]) -> Dict[str, List[float]]:
         "leg": action[16:21],
         "head": action[21:23],
         "chassis_vel": action[27:31],
+        #后面的维度是odom的
     }
 
 
@@ -126,9 +129,9 @@ def generate_trajectory_point(
         
         if is_gripper_joint:
             # 为夹爪设置专属的加速度、力矩、速度
-            joint_cmd.acceleration = gripper_acceleration
+            # joint_cmd.acceleration = gripper_acceleration
             joint_cmd.effort = gripper_effort
-            joint_cmd.velocity = gripper_velocity
+            joint_cmd.velocity = gripper_velocity * GRIPPER_VALUE_TO_WIDTH_M
             logger.debug(f"夹爪关节 {i} 设置: pos={joint_pos_vec[i]:.3f}, "
                          f"acc={gripper_acceleration}, effort={gripper_effort}, "
                          f"vel={gripper_velocity}")
@@ -534,8 +537,10 @@ def replay_parquet(
     
     # 初始化机器人
     robot = GalbotRobot.get_instance()
-    robot.init()
+    ok = robot.init()
     time.sleep(1.5)  # 增加初始化等待时间
+    if not ok:
+        raise RuntimeError("GalbotRobot.init() failed")
     logger.info("机器人初始化完成")
     
     # 读取数据
@@ -550,7 +555,23 @@ def replay_parquet(
     
     # 构建轨迹点 + 底盘速度数据（同步存储）
     traj = Trajectory()
-    traj.joint_groups = ["leg", "head", "left_arm", "right_arm", "left_gripper", "right_gripper"]
+    traj.joint_groups = []
+    # traj.joint_groups = ["head", "leg", "left_arm", "right_arm", "left_gripper", "right_gripper"]
+    # traj.joint_names = ["leg", "head", "left_arm", "right_arm", "left_gripper", "right_gripper"]
+
+    JOINT_GROUP_ORDER = [
+        "leg",
+        "head",
+        "left_arm",
+        "right_arm",
+        "left_gripper",
+        "right_gripper",
+    ]
+    expanded_joint_names: list[str] = []
+    for group_name in JOINT_GROUP_ORDER:
+        expanded_joint_names.extend(robot.get_joint_names(True, [group_name]))
+
+    traj.joint_names = expanded_joint_names
     # traj.points = []
     point_list=[]
     
@@ -559,7 +580,7 @@ def replay_parquet(
     for i, row in df.iterrows():
         try:
             action = to_list(row["action"])
-            parts = split_action_31(action)
+            parts = split_action_38(action)
             timestamp = float(row["timestamp"])
             
             # 生成轨迹点
